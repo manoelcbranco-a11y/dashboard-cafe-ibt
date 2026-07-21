@@ -68,11 +68,10 @@
   .row .top b{font-weight:600;} .row .top span{color:#A6937D;}
   .track{height:8px;border-radius:4px;background:#2E2418;overflow:hidden;}
   .track>div{height:100%;border-radius:4px;}
-  .prod{display:grid;grid-template-columns:26px 1fr 60px 88px 92px;gap:10px;align-items:center;}
+  .prod{display:grid;grid-template-columns:26px minmax(0,1fr) auto 88px;gap:10px;align-items:center;}
   .prod .rank{font-size:12px;font-weight:700;color:#D9A05B;}
   .prod .name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .prod .track{height:6px;margin-top:5px;}
-  .prod .qty{font-size:12.5px;color:#A6937D;text-align:right;}
   .prod .unit{font-size:12px;color:#A6937D;text-align:right;white-space:nowrap;}
   .prod .rev{font-size:13px;font-weight:700;text-align:right;}
   .footnote{font-size:11.5px;color:#6E6152;text-align:center;}
@@ -119,6 +118,12 @@ const brl0 = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'
 const pct = v => (v * 100).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '%';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+// horas após a meia-noite pertencem ao turno do dia anterior → ordenadas no fim do eixo
+const shiftHour = s => {
+  const h = parseInt((s.created_at || '').slice(11, 13), 10);
+  if (isNaN(h)) return null;
+  return (s.created_at || '').slice(0, 10) > (s.shift_date || '') ? h + 24 : h;
+};
 
 async function apiPage(endpoint, params) {
   const qs = new URLSearchParams(params).toString();
@@ -293,15 +298,15 @@ function render() {
   if (spanDays === 1) {
     const byH = {};
     for (const s of sales) {
-      const h = parseInt((s.created_at || '').slice(11, 13), 10);
-      if (!isNaN(h)) { byH[h] = byH[h] || { rev: 0, n: 0 }; byH[h].rev += s.total_amount || 0; byH[h].n++; }
+      const k = shiftHour(s);
+      if (k !== null) { byH[k] = byH[k] || { rev: 0, n: 0 }; byH[k].rev += s.total_amount || 0; byH[k].n++; }
     }
     const ks = Object.keys(byH).map(Number);
     const lo = ks.length ? Math.min(...ks) : 8, hi = ks.length ? Math.max(...ks) : 18;
     evoPts = [];
-    for (let h = lo; h <= hi; h++) {
-      const v = byH[h] || { rev: 0, n: 0 };
-      evoPts.push({ xLabel: h + 'h', tipDate: h + 'h–' + (h + 1) + 'h', rev: v.rev, n: v.n, ticket: v.n ? v.rev / v.n : 0 });
+    for (let k = lo; k <= hi; k++) {
+      const v = byH[k] || { rev: 0, n: 0 };
+      evoPts.push({ xLabel: (k % 24) + 'h', tipDate: (k % 24) + 'h–' + ((k + 1) % 24) + 'h' + (k >= 24 ? ' (madrugada)' : ''), rev: v.rev, n: v.n, ticket: v.n ? v.rev / v.n : 0 });
     }
   } else {
     evoPts = daily.map(x => ({
@@ -337,18 +342,15 @@ function render() {
 
   // hourly
   const byHour = {};
-  for (const s of sales) {
-    const h = parseInt((s.created_at || '').slice(11, 13), 10);
-    if (!isNaN(h)) byHour[h] = (byHour[h] || 0) + 1;
-  }
+  for (const s of sales) { const k = shiftHour(s); if (k !== null) byHour[k] = (byHour[k] || 0) + 1; }
   const hks = Object.keys(byHour).map(Number);
   const hMin = hks.length ? Math.min(...hks) : 8, hMax = hks.length ? Math.max(...hks) : 18;
   const maxH = Math.max(1, ...Object.values(byHour));
   let hourlyHtml = '';
-  for (let h = hMin; h <= hMax; h++) {
-    hourlyHtml += `<div class="col" title="${(byHour[h] || 0)} pedidos entre ${h}h e ${h + 1}h">
-      <div class="val">${byHour[h] || ''}</div>
-      <div class="bar" style="height:${Math.round((byHour[h] || 0) / maxH * 100)}%"></div><div class="lbl">${h}h</div></div>`;
+  for (let k = hMin; k <= hMax; k++) {
+    hourlyHtml += `<div class="col" title="${(byHour[k] || 0)} pedidos entre ${k % 24}h e ${(k + 1) % 24}h${k >= 24 ? ' (madrugada — turno do dia anterior)' : ''}">
+      <div class="val">${byHour[k] || ''}</div>
+      <div class="bar" style="height:${Math.round((byHour[k] || 0) / maxH * 100)}%"></div><div class="lbl">${k % 24}h</div></div>`;
   }
 
   // weekday averages
@@ -395,9 +397,9 @@ function render() {
   const maxProd = prodList.length ? (F.prodMetric === 'qty' ? prodList[0][1].qty : prodList[0][1].rev) : 1;
   const prodHtml = prodList.length ? prodList.map(([name, v], i) => `
     <div class="prod"><div class="rank">${i + 1}</div>
-      <div style="min-width:0"><div class="name">${esc(name)}</div>
+      <div style="min-width:0" title="${esc(name)}"><div class="name">${esc(name)}</div>
       <div class="track"><div style="background:#D9A05B;width:${Math.max(2, Math.round((F.prodMetric === 'qty' ? v.qty : v.rev) / maxProd * 100))}%"></div></div></div>
-      <div class="qty">${v.qty.toLocaleString('pt-BR')} un</div><div class="unit">${v.qty ? brl(v.rev / v.qty) + '/un' : '—'}</div><div class="rev">${brl(v.rev)}</div></div>`).join('')
+      <div class="unit">${v.qty.toLocaleString('pt-BR')} un · ${v.qty ? brl(v.rev / v.qty) + '/un' : '—'}</div><div class="rev">${brl(v.rev)}</div></div>`).join('')
     : `<div style="font-size:13px;color:#A6937D;padding:12px 0;">Nenhum produto encontrado para "${esc(F.prodSearch)}".</div>`;
   const prodTabsHtml = [['rev', 'receita'], ['qty', 'quantidade']].map(([k, label]) =>
     `<button class="${F.prodMetric === k ? 'on' : ''}" onclick="setF('prodMetric','${k}')">${label}</button>`).join('');
