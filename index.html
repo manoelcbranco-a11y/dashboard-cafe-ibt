@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Café do IBT · Dashboard de vendas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#171210;color:#F2E9DB;font-family:'Archivo',sans-serif;}
+  a{color:#D9A05B;text-decoration:none;} a:hover{color:#E8C285;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .wrap{min-height:100vh;padding:28px 32px 48px;max-width:1280px;margin:0 auto;}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+  .brand{font-family:'Lora',serif;font-style:italic;font-size:15px;color:#D9A05B;}
+  h1{margin:2px 0;font-family:'Lora',serif;font-weight:600;font-size:30px;letter-spacing:-0.01em;color:#F7F0E4;}
+  .meta{font-size:12.5px;color:#A6937D;}
+  .controls{display:flex;align-items:center;gap:10px;}
+  .seg{display:flex;gap:4px;background:#221B15;border:1px solid #372C20;border-radius:10px;padding:4px;}
+  .seg button, .seg2 button{border:none;cursor:pointer;font-family:'Archivo',sans-serif;font-weight:600;background:transparent;color:#A6937D;border-radius:7px;}
+  .seg button{font-size:13px;padding:7px 14px;}
+  .seg2{display:flex;gap:3px;background:#221B15;border:1px solid #372C20;border-radius:8px;padding:3px;}
+  .seg2 button{font-size:12px;padding:5px 10px;border-radius:5px;}
+  .seg button.on,.seg2 button.on{background:#3A2D1D;color:#F2E9DB;}
+  .refresh{border:1px solid #4A3A28;cursor:pointer;background:#2A2118;color:#E8C285;font-family:'Archivo',sans-serif;font-size:13px;font-weight:600;padding:11px 16px;border-radius:10px;}
+  .refresh:hover{background:#332818;}
+  .card{background:#201914;border:1px solid #372C20;border-radius:14px;padding:20px 22px;}
+  .filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-radius:12px;padding:12px 16px;}
+  .filters .fl{font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#A6937D;}
+  select,input[type=text],input[type=date],input[type=month]{background:#2A2118;color:#F2E9DB;border:1px solid #4A3A28;border-radius:8px;padding:8px 10px;font-family:'Archivo',sans-serif;font-size:13px;outline:none;color-scheme:dark;}
+  input[type=date],input[type=month]{border-radius:10px;padding:9px 12px;}
+  select{cursor:pointer;max-width:260px;}
+  select option{background:#201914;color:#F2E9DB;}
+  .clearbtn{border:none;cursor:pointer;background:transparent;color:#D9A05B;font-family:'Archivo',sans-serif;font-size:13px;font-weight:600;text-decoration:underline;padding:8px 6px;}
+  .grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+  .kpi{display:flex;flex-direction:column;gap:6px;padding:18px 20px;}
+  .kpi .l{font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#A6937D;}
+  .kpi .v{font-size:28px;font-weight:700;letter-spacing:-0.02em;color:#F7F0E4;}
+  .kpi .s{font-size:12.5px;color:#A6937D;}
+  .sect-title{font-family:'Lora',serif;font-size:17px;font-weight:600;color:#F7F0E4;}
+  .sect-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .stack{display:flex;flex-direction:column;gap:16px;}
+  .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start;}
+  .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;align-items:start;}
+  .evo{display:flex;gap:10px;}
+  .evo .ylab{display:flex;flex-direction:column;justify-content:space-between;height:200px;font-size:10.5px;color:#A6937D;text-align:right;min-width:56px;}
+  .evo .plot{flex:1;position:relative;height:200px;border-bottom:1px solid #372C20;}
+  .evo svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+  .evo .cols{position:absolute;inset:0;display:flex;}
+  .evo .cols div{flex:1;height:100%;}
+  .evo .cols div:hover{background:rgba(217,160,91,0.08);}
+  .xlabs{display:flex;margin-left:66px;margin-top:6px;}
+  .xlabs div{flex:1;font-size:10px;color:#A6937D;text-align:center;white-space:nowrap;}
+  .hbars{display:flex;align-items:flex-end;gap:4px;height:120px;}
+  .hbars .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;}
+  .hbars .bar{width:100%;max-width:26px;border-radius:5px 5px 2px 2px;background:#8C6A45;min-height:2px;}
+  .hbars .lbl{font-size:10px;color:#A6937D;}
+  .wbars{display:flex;align-items:flex-end;gap:6px;height:120px;}
+  .wbars .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;}
+  .wbars .val{font-size:10px;font-weight:600;color:#A6937D;white-space:nowrap;}
+  .wbars .bar{width:100%;max-width:34px;border-radius:5px 5px 2px 2px;min-height:2px;}
+  .wbars .lbl{font-size:10.5px;color:#A6937D;}
+  .rows{display:flex;flex-direction:column;gap:12px;}
+  .row .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
+  .row .top b{font-weight:600;} .row .top span{color:#A6937D;}
+  .track{height:8px;border-radius:4px;background:#2E2418;overflow:hidden;}
+  .track>div{height:100%;border-radius:4px;}
+  .prod{display:grid;grid-template-columns:26px 1fr 70px 100px;gap:10px;align-items:center;}
+  .prod .rank{font-size:12px;font-weight:700;color:#D9A05B;}
+  .prod .name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .prod .track{height:6px;margin-top:5px;}
+  .prod .qty{font-size:12.5px;color:#A6937D;text-align:right;}
+  .prod .rev{font-size:13px;font-weight:700;text-align:right;}
+  .footnote{font-size:11.5px;color:#6E6152;text-align:center;}
+  .loading{display:flex;flex-direction:column;align-items:center;gap:14px;padding:120px 0;color:#A6937D;font-size:14px;}
+  .spinner{width:34px;height:34px;border-radius:50%;border:3px solid #372C20;border-top-color:#D9A05B;animation:spin .8s linear infinite;}
+  .errbox{max-width:520px;margin:80px auto;border-color:#6B3A28;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;}
+  .errbox .t{font-family:'Lora',serif;font-size:19px;font-weight:600;color:#E08A66;}
+  .errbox .m{font-size:13.5px;color:#A6937D;line-height:1.5;}
+  .errbox button{border:none;cursor:pointer;background:#D9A05B;color:#241A10;font-family:'Archivo',sans-serif;font-size:13px;font-weight:700;padding:10px 22px;border-radius:9px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">Café do IBT</div>
+      <h1>Dashboard de vendas</h1>
+      <div class="meta" id="meta">Dados Saipos · carregando…</div>
+    </div>
+    <div class="controls">
+      <div class="seg" id="modes"></div>
+      <span id="periodCtl" style="display:flex;align-items:center;gap:10px;"></span>
+      <button class="refresh" onclick="load()">Atualizar</button>
+    </div>
+  </header>
+  <div id="content"></div>
+</div>
+<script>
+const REFRESH_MINUTES = 5;
+const PERIODS = [7, 15, 30];
+const FN = '/.netlify/functions/saipos';
+const TYPE_NAMES = { 1: 'Entrega', 2: 'Balcão / retirada', 3: 'Salão', 4: 'Ficha / senha' };
+const WD = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+
+let days = 15, lastUpdate = null;
+let mode = 'days', dateSel = '', monthSel = '', rangeStart = '', rangeEnd = '';
+let rawSales = [], rawItems = [];
+let F = { metric: 'rev', channel: 'all', payment: 'all', product: 'all', prodSearch: '', prodMetric: 'rev' };
+
+const pad = n => String(n).padStart(2, '0');
+const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const brl = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const brl0 = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+const pct = v => (v * 100).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '%';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+async function apiPage(endpoint, params) {
+  const qs = new URLSearchParams(params).toString();
+  let lastMsg = '';
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt) await new Promise(res => setTimeout(res, 1500 * attempt));
+    let r;
+    try { r = await fetch(`${FN}?endpoint=${endpoint}&${qs}`); }
+    catch (e) { lastMsg = 'Falha de rede'; continue; }
+    if (r.ok) return r.json();
+    lastMsg = 'HTTP ' + r.status;
+    try { lastMsg += ' — ' + ((await r.json()).message || ''); } catch (e) {}
+    if (r.status < 500 && r.status !== 429) throw new Error(lastMsg);
+  }
+  throw new Error(lastMsg + ' (a API da Saipos está instável no momento — tentamos 4 vezes; aguarde alguns minutos)');
+}
+
+async function fetchAll(endpoint, startStr, endStr) {
+  const rows = [];
+  for (let offset = 0, i = 0; i < 12; i++, offset += 1000) {
+    const page = await apiPage(endpoint, {
+      p_date_column_filter: 'shift_date',
+      p_filter_date_start: startStr + 'T00:00:00',
+      p_filter_date_end: endStr + 'T23:59:59',
+      p_limit: 1000, p_offset: offset,
+    });
+    rows.push(...page);
+    if (page.length < 1000) break;
+  }
+  return rows;
+}
+
+function renderControls() {
+  document.getElementById('modes').innerHTML = [['days', 'Período'], ['day', 'Dia'], ['month', 'Mês'], ['range', 'Intervalo']].map(([k, l]) =>
+    `<button class="${mode === k ? 'on' : ''}" onclick="setMode('${k}')">${l}</button>`).join('');
+  const c = document.getElementById('periodCtl');
+  if (mode === 'days') c.innerHTML = `<span class="seg">${PERIODS.map(n =>
+    `<button class="${n === days ? 'on' : ''}" onclick="setDays(${n})">${n} dias</button>`).join('')}</span>`;
+  else if (mode === 'day') c.innerHTML = `<input type="date" value="${dateSel}" onchange="setDateSel(this.value)">`;
+  else if (mode === 'month') c.innerHTML = `<input type="month" value="${monthSel}" onchange="setMonthSel(this.value)">`;
+  else c.innerHTML = `<input type="date" value="${rangeStart}" onchange="setRangeStart(this.value)"> <span style="font-size:13px;color:#A6937D;">até</span> <input type="date" value="${rangeEnd}" onchange="setRangeEnd(this.value)">`;
+}
+function setMode(m) { mode = m; renderControls(); load(); }
+function setDays(n) { days = n; renderControls(); load(); }
+function setDateSel(v) { if (v) { dateSel = v; load(); } }
+function setMonthSel(v) { if (v) { monthSel = v; load(); } }
+function setRangeStart(v) { if (v) { rangeStart = v; load(); } }
+function setRangeEnd(v) { if (v) { rangeEnd = v; load(); } }
+function range() {
+  if (mode === 'day' && dateSel) {
+    const [y, m, d] = dateSel.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    return { start: dt, end: new Date(dt) };
+  }
+  if (mode === 'range' && rangeStart && rangeEnd) {
+    const parse = v => { const [y, m, d] = v.split('-').map(Number); return new Date(y, m - 1, d); };
+    let a = parse(rangeStart), b = parse(rangeEnd);
+    if (a > b) { const t = a; a = b; b = t; }
+    return { start: a, end: b };
+  }
+  if (mode === 'month' && monthSel) {
+    const [y, m] = monthSel.split('-').map(Number);
+    const start = new Date(y, m - 1, 1);
+    let end = new Date(y, m, 0);
+    const today = new Date();
+    if (end > today && start <= today) end = today;
+    return { start, end };
+  }
+  const end = new Date();
+  const start = new Date(); start.setDate(start.getDate() - (days - 1));
+  return { start, end };
+}
+function setF(k, v) { F[k] = v; render(); }
+function clearFilters() { F.channel = 'all'; F.payment = 'all'; F.product = 'all'; render(); }
+function setMeta(txt) { document.getElementById('meta').textContent = txt; }
+
+let loadSeq = 0;
+async function load() {
+  const seq = ++loadSeq;
+  renderControls();
+  document.getElementById('content').innerHTML =
+    '<div class="loading"><div class="spinner"></div>Buscando vendas na Saipos…</div>';
+  try {
+    const { start, end } = range();
+    const chunks = [];
+    for (let s = new Date(start); s <= end;) {
+      const e = new Date(s); e.setDate(e.getDate() + 13);
+      const ce = e < end ? e : end;
+      chunks.push([fmtDate(s), fmtDate(ce)]);
+      s = new Date(ce); s.setDate(s.getDate() + 1);
+    }
+    const localSales = [], localItems = [];
+    for (const [cs, ce] of chunks) {
+      const [sv, iv] = await Promise.all([fetchAll('search_sales', cs, ce), fetchAll('sales_items', cs, ce)]);
+      localSales.push(...sv); localItems.push(...iv);
+    }
+    if (seq !== loadSeq) return;
+    rawSales = localSales; rawItems = localItems;
+    lastUpdate = new Date();
+    setMeta('Dados Saipos · atualizado ' + lastUpdate.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' · auto-atualiza a cada ' + REFRESH_MINUTES + ' min');
+    render();
+  } catch (e) {
+    if (seq !== loadSeq) return;
+    document.getElementById('content').innerHTML = `
+      <div class="card errbox">
+        <div class="t">Não foi possível carregar os dados</div>
+        <div class="m">${esc(e.message || e)}<br>Verifique se a function do Netlify está publicada e se a variável SAIPOS_TOKEN está configurada.</div>
+        <button onclick="load()">Tentar novamente</button>
+      </div>`;
+  }
+}
+
+function render() {
+  const valid = rawSales.filter(s => s.canceled !== 'Y');
+  const canceledCount = rawSales.length - valid.length;
+
+  const prodsBySale = {};
+  for (const row of rawItems) {
+    const set = prodsBySale[row.id_sale] || (prodsBySale[row.id_sale] = new Set());
+    for (const it of (row.items || [])) if (it.deleted !== 'Y') set.add(it.desc_sale_item || '—');
+  }
+
+  const paySet = new Set(), chanSet = new Set(), prodTot = {};
+  for (const s of valid) {
+    chanSet.add(String(s.id_sale_type));
+    for (const p of (s.payments || [])) paySet.add(p.desc_store_payment_type || 'Outros');
+  }
+  const validIdsAll = new Set(valid.map(s => s.id_sale));
+  for (const row of rawItems) {
+    if (!validIdsAll.has(row.id_sale)) continue;
+    for (const it of (row.items || [])) if (it.deleted !== 'Y') {
+      const k = it.desc_sale_item || '—';
+      prodTot[k] = (prodTot[k] || 0) + (it.quantity || 0) * (it.unit_price || 0);
+    }
+  }
+
+  let sales = valid;
+  if (F.channel !== 'all') sales = sales.filter(s => String(s.id_sale_type) === F.channel);
+  if (F.payment !== 'all') sales = sales.filter(s => (s.payments || []).some(p => (p.desc_store_payment_type || 'Outros') === F.payment));
+  if (F.product !== 'all') sales = sales.filter(s => (prodsBySale[s.id_sale] || new Set()).has(F.product));
+  const ids = new Set(sales.map(s => s.id_sale));
+  const filtersActive = F.channel !== 'all' || F.payment !== 'all' || F.product !== 'all';
+
+  const items = [];
+  for (const row of rawItems) {
+    if (!ids.has(row.id_sale)) continue;
+    for (const it of (row.items || [])) if (it.deleted !== 'Y') items.push(it);
+  }
+  const revenue = sales.reduce((a, s) => a + (s.total_amount || 0), 0);
+  const orders = sales.length;
+  const ticket = orders ? revenue / orders : 0;
+  const itemCount = items.reduce((a, i) => a + (i.quantity || 0), 0);
+
+  const byDay = {};
+  for (const s of sales) {
+    byDay[s.shift_date] = byDay[s.shift_date] || { rev: 0, n: 0 };
+    byDay[s.shift_date].rev += s.total_amount || 0; byDay[s.shift_date].n++;
+  }
+  const { start: rngStart, end: rngEnd } = range();
+  const spanDays = Math.round((new Date(rngEnd.getFullYear(), rngEnd.getMonth(), rngEnd.getDate()) - new Date(rngStart.getFullYear(), rngStart.getMonth(), rngStart.getDate())) / 864e5) + 1;
+  const daily = [];
+  for (let i = 0; i < spanDays; i++) {
+    const d = new Date(rngStart.getFullYear(), rngStart.getMonth(), rngStart.getDate() + i);
+    const v = byDay[fmtDate(d)] || { rev: 0, n: 0 };
+    daily.push({ d, rev: v.rev, n: v.n, ticket: v.n ? v.rev / v.n : 0 });
+  }
+
+  // evolution chart
+  const metricDefs = { rev: ['Faturamento', x => x.rev, brl0], n: ['Pedidos', x => x.n, v => Math.round(v).toLocaleString('pt-BR')], ticket: ['Ticket médio', x => x.ticket, brl0] };
+  const [mLabel, mGet, mFmt] = metricDefs[F.metric];
+  let evoPts;
+  if (spanDays === 1) {
+    const byH = {};
+    for (const s of sales) {
+      const h = parseInt((s.created_at || '').slice(11, 13), 10);
+      if (!isNaN(h)) { byH[h] = byH[h] || { rev: 0, n: 0 }; byH[h].rev += s.total_amount || 0; byH[h].n++; }
+    }
+    const ks = Object.keys(byH).map(Number);
+    const lo = ks.length ? Math.min(...ks) : 8, hi = ks.length ? Math.max(...ks) : 18;
+    evoPts = [];
+    for (let h = lo; h <= hi; h++) {
+      const v = byH[h] || { rev: 0, n: 0 };
+      evoPts.push({ xLabel: h + 'h', tipDate: h + 'h–' + (h + 1) + 'h', rev: v.rev, n: v.n, ticket: v.n ? v.rev / v.n : 0 });
+    }
+  } else {
+    evoPts = daily.map(x => ({
+      xLabel: spanDays > 15 ? x.d.getDate() + '/' + (x.d.getMonth() + 1) : WD[x.d.getDay()] + ' ' + x.d.getDate(),
+      tipDate: x.d.toLocaleDateString('pt-BR'), rev: x.rev, n: x.n, ticket: x.ticket,
+    }));
+  }
+  const series = evoPts.map(mGet);
+  const maxV = Math.max(1, ...series);
+  const W = 800, H = 200, n = series.length;
+  const px = i => n > 1 ? i / (n - 1) * W : W / 2;
+  const py = v => H - (v / maxV) * (H - 10);
+  const linePts = series.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' L');
+  const lineD = 'M' + linePts;
+  const areaD = lineD + ` L${W},${H} L0,${H} Z`;
+  const dots = evoPts.map((x, i) => (x.n || F.metric !== 'rev') ? `<circle cx="${px(i).toFixed(1)}" cy="${py(series[i]).toFixed(1)}" r="3" fill="#E8B36A"/>` : '').join('');
+  const evoSvg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="gEvo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D9A05B" stop-opacity="0.35"/><stop offset="100%" stop-color="#D9A05B" stop-opacity="0.02"/>
+    </linearGradient></defs>
+    <line x1="0" y1="${py(maxV / 2)}" x2="${W}" y2="${py(maxV / 2)}" stroke="#372C20" stroke-width="1" stroke-dasharray="4 4"/>
+    <path d="${areaD}" fill="url(#gEvo)"/>
+    <path d="${lineD}" fill="none" stroke="#E8B36A" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>${dots}</svg>`;
+  const evoCols = evoPts.map((x, i) =>
+    `<div title="${esc(x.tipDate + ' · ' + mLabel + ': ' + mFmt(series[i]) + ' · ' + x.n + ' pedidos · ' + brl(x.rev))}"></div>`).join('');
+  const step = Math.max(1, Math.ceil(n / 10));
+  const xlabs = evoPts.map((x, i) =>
+    `<div>${(i % step === 0 || i === n - 1) ? x.xLabel : ''}</div>`).join('');
+  const metricTabsHtml = Object.entries(metricDefs).map(([k, [label]]) =>
+    `<button class="${F.metric === k ? 'on' : ''}" onclick="setF('metric','${k}')">${label}</button>`).join('');
+
+  // hourly
+  const byHour = {};
+  for (const s of sales) {
+    const h = parseInt((s.created_at || '').slice(11, 13), 10);
+    if (!isNaN(h)) byHour[h] = (byHour[h] || 0) + 1;
+  }
+  const hks = Object.keys(byHour).map(Number);
+  const hMin = hks.length ? Math.min(...hks) : 8, hMax = hks.length ? Math.max(...hks) : 18;
+  const maxH = Math.max(1, ...Object.values(byHour));
+  let hourlyHtml = '';
+  for (let h = hMin; h <= hMax; h++) {
+    hourlyHtml += `<div class="col" title="${(byHour[h] || 0)} pedidos entre ${h}h e ${h + 1}h">
+      <div class="bar" style="height:${Math.round((byHour[h] || 0) / maxH * 100)}%"></div><div class="lbl">${h}h</div></div>`;
+  }
+
+  // weekday averages
+  const wdAgg = Array.from({ length: 7 }, () => ({ rev: 0, ds: new Set() }));
+  for (const x of daily) if (x.n) { wdAgg[x.d.getDay()].rev += x.rev; wdAgg[x.d.getDay()].ds.add(fmtDate(x.d)); }
+  const wdAvg = wdAgg.map(a => a.ds.size ? a.rev / a.ds.size : 0);
+  const maxWd = Math.max(1, ...wdAvg);
+  const weekdayHtml = [1, 2, 3, 4, 5, 6, 0].map(i => `
+    <div class="col" title="média de ${esc(brl(wdAvg[i]))} em ${wdAgg[i].ds.size} ${WD[i]}">
+      <div class="val">${wdAvg[i] ? brl0(wdAvg[i]).replace(/\u00a0/g, '') : '—'}</div>
+      <div class="bar" style="background:${(i === 0 || i === 6) ? '#D9A05B' : '#8C6A45'};height:${Math.round(wdAvg[i] / maxWd * 100)}%"></div>
+      <div class="lbl">${WD[i]}</div></div>`).join('');
+
+  // payments
+  const byPay = {};
+  for (const s of sales) for (const p of (s.payments || [])) {
+    const k = p.desc_store_payment_type || 'Outros';
+    byPay[k] = (byPay[k] || 0) + (p.payment_amount || 0);
+  }
+  const payTotal = Object.values(byPay).reduce((a, b) => a + b, 0) || 1;
+  const payHtml = Object.entries(byPay).sort((a, b) => b[1] - a[1]).map(([name, amt]) => `
+    <div class="row"><div class="top"><b>${esc(name)}</b><span>${brl0(amt)} · ${pct(amt / payTotal)}</span></div>
+    <div class="track"><div style="background:#D9A05B;width:${Math.round(amt / payTotal * 100)}%"></div></div></div>`).join('');
+
+  // channels
+  const byType = {};
+  for (const s of sales) byType[s.id_sale_type] = (byType[s.id_sale_type] || 0) + 1;
+  const typeHtml = Object.entries(byType).sort((a, b) => b[1] - a[1]).map(([t, cnt]) => `
+    <div class="row"><div class="top"><b>${TYPE_NAMES[t] || 'Tipo ' + t}</b><span>${cnt} pedidos · ${pct(cnt / (orders || 1))}</span></div>
+    <div class="track"><div style="background:#8C6A45;width:${Math.round(cnt / (orders || 1) * 100)}%"></div></div></div>`).join('');
+
+  // top products
+  const byProd = {};
+  for (const it of items) {
+    const k = it.desc_sale_item || '—';
+    byProd[k] = byProd[k] || { qty: 0, rev: 0 };
+    byProd[k].qty += it.quantity || 0;
+    byProd[k].rev += (it.quantity || 0) * (it.unit_price || 0);
+  }
+  const q = norm(F.prodSearch.trim());
+  let prodList = Object.entries(byProd).filter(([name]) => !q || norm(name).includes(q));
+  prodList.sort((a, b) => F.prodMetric === 'qty' ? b[1].qty - a[1].qty : b[1].rev - a[1].rev);
+  prodList = prodList.slice(0, 10);
+  const maxProd = prodList.length ? (F.prodMetric === 'qty' ? prodList[0][1].qty : prodList[0][1].rev) : 1;
+  const prodHtml = prodList.length ? prodList.map(([name, v], i) => `
+    <div class="prod"><div class="rank">${i + 1}</div>
+      <div style="min-width:0"><div class="name">${esc(name)}</div>
+      <div class="track"><div style="background:#D9A05B;width:${Math.max(2, Math.round((F.prodMetric === 'qty' ? v.qty : v.rev) / maxProd * 100))}%"></div></div></div>
+      <div class="qty">${v.qty.toLocaleString('pt-BR')} un</div><div class="rev">${brl(v.rev)}</div></div>`).join('')
+    : `<div style="font-size:13px;color:#A6937D;padding:12px 0;">Nenhum produto encontrado para "${esc(F.prodSearch)}".</div>`;
+  const prodTabsHtml = [['rev', 'receita'], ['qty', 'quantidade']].map(([k, label]) =>
+    `<button class="${F.prodMetric === k ? 'on' : ''}" onclick="setF('prodMetric','${k}')">${label}</button>`).join('');
+
+  // filter selects
+  const opt = (v, label, cur) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label)}</option>`;
+  const chanSel = `<select onchange="setF('channel',this.value)">${opt('all', 'Todos os canais', F.channel)}${[...chanSet].sort().map(t => opt(t, TYPE_NAMES[t] || 'Tipo ' + t, F.channel)).join('')}</select>`;
+  const paySel = `<select onchange="setF('payment',this.value)">${opt('all', 'Todos os pagamentos', F.payment)}${[...paySet].sort().map(p => opt(p, p, F.payment)).join('')}</select>`;
+  const prodSel = `<select onchange="setF('product',this.value)">${opt('all', 'Todos os produtos', F.product)}${Object.entries(prodTot).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([p]) => opt(p, p, F.product)).join('')}</select>`;
+  const noteParts = [];
+  if (F.channel !== 'all') noteParts.push(TYPE_NAMES[F.channel] || F.channel);
+  if (F.payment !== 'all') noteParts.push(F.payment);
+  if (F.product !== 'all') noteParts.push('vendas com "' + F.product + '"');
+  const clearHtml = filtersActive
+    ? `<button class="clearbtn" onclick="clearFilters()">limpar filtros</button><span style="font-size:12px;color:#A6937D;">mostrando: ${esc(noteParts.join(' · '))}</span>` : '';
+
+  const kpis = [
+    { l: 'Faturamento', v: brl(revenue), s: filtersActive ? 'com filtros aplicados' : (mode === 'day' ? rngStart.toLocaleDateString('pt-BR') : mode === 'month' ? rngStart.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : mode === 'range' ? rngStart.toLocaleDateString('pt-BR') + ' – ' + rngEnd.toLocaleDateString('pt-BR') : 'últimos ' + days + ' dias') },
+    { l: 'Pedidos', v: orders.toLocaleString('pt-BR'), s: filtersActive ? 'de ' + valid.length + ' no período' : (canceledCount ? canceledCount + ' cancelados' : 'nenhum cancelado') },
+    { l: 'Ticket médio', v: brl(ticket), s: 'por pedido' },
+    { l: 'Itens vendidos', v: itemCount.toLocaleString('pt-BR'), s: (orders ? (itemCount / orders).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) : '0') + ' itens/pedido' },
+  ];
+
+  document.getElementById('content').innerHTML = `
+    <div class="stack">
+      <div class="card filters">
+        <span class="fl">Filtros</span>${chanSel}${paySel}${prodSel}${clearHtml}
+      </div>
+      <div class="grid-kpi">${kpis.map(k => `<div class="card kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="s">${k.s}</div></div>`).join('')}</div>
+      <div class="card">
+        <div class="sect-head"><div class="sect-title">Evolução diária</div><div class="seg2">${metricTabsHtml}</div></div>
+        <div class="evo">
+          <div class="ylab"><span>${mFmt(maxV)}</span><span>${mFmt(maxV / 2)}</span><span>0</span></div>
+          <div class="plot">${evoSvg}<div class="cols">${evoCols}</div></div>
+        </div>
+        <div class="xlabs">${xlabs}</div>
+      </div>
+      <div class="grid-3">
+        <div class="card"><div class="sect-title" style="margin-bottom:16px">Pedidos por horário</div><div class="hbars">${hourlyHtml}</div></div>
+        <div class="card"><div class="sect-head" style="margin-bottom:16px"><div class="sect-title">Dia da semana</div><div class="meta">faturamento médio</div></div><div class="wbars">${weekdayHtml}</div></div>
+        <div class="card"><div class="sect-title" style="margin-bottom:12px">Canal de venda</div><div class="rows">${typeHtml}</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="sect-title" style="margin-bottom:12px">Formas de pagamento</div><div class="rows">${payHtml}</div></div>
+        <div class="card">
+          <div class="sect-head">
+            <div class="sect-title">Produtos mais vendidos</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" placeholder="buscar produto…" style="width:150px" value="${esc(F.prodSearch)}" oninput="setF('prodSearch',this.value);this.focus()">
+              <div class="seg2">${prodTabsHtml}</div>
+            </div>
+          </div>
+          <div class="rows" style="gap:10px">${prodHtml}</div>
+        </div>
+      </div>
+      <div class="footnote">Vendas canceladas e itens excluídos não entram nos totais. Em horários de pico a Saipos pode atualizar os dados com atraso de até 1 dia.</div>
+    </div>`;
+
+  const inp = document.querySelector('.sect-head input[type=text]');
+  if (inp && F.prodSearch) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+}
+
+dateSel = fmtDate(new Date());
+monthSel = dateSel.slice(0, 7);
+const _wk = new Date(); _wk.setDate(_wk.getDate() - 6);
+rangeStart = fmtDate(_wk); rangeEnd = dateSel;
+renderControls();
+load();
+setInterval(load, REFRESH_MINUTES * 60 * 1000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && lastUpdate && Date.now() - lastUpdate > REFRESH_MINUTES * 60 * 1000) load();
+});
+</script>
+</body>
+</html>
