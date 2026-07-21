@@ -23,6 +23,8 @@
   .seg2{display:flex;gap:3px;background:#221B15;border:1px solid #372C20;border-radius:8px;padding:3px;}
   .seg2 button{font-size:12px;padding:5px 10px;border-radius:5px;}
   .seg button.on,.seg2 button.on{background:#3A2D1D;color:#F2E9DB;}
+  .chip{border:1px solid #372C20;cursor:pointer;background:transparent;color:#A6937D;font-family:'Archivo',sans-serif;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;}
+  .chip.on{background:#3A2D1D;color:#F2E9DB;border-color:#D9A05B;}
   .refresh{border:1px solid #4A3A28;cursor:pointer;background:#2A2118;color:#E8C285;font-family:'Archivo',sans-serif;font-size:13px;font-weight:600;padding:11px 16px;border-radius:10px;}
   .refresh:hover{background:#332818;}
   .card{background:#201914;border:1px solid #372C20;border-radius:14px;padding:20px 22px;}
@@ -107,7 +109,10 @@ const TYPE_NAMES = { 1: 'Entrega', 2: 'Balcão / retirada', 3: 'Salão', 4: 'Fic
 const WD = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
 let days = 15, lastUpdate = null;
-let mode = 'days', dateSel = '', monthSel = '', rangeStart = '', rangeEnd = '';
+let mode = 'months', dateSel = '', monthSel = '', rangeStart = '', rangeEnd = '';
+let monthsSel = [];
+const MN = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const PALETTE = ['#E8B36A', '#9DBA7F', '#8FB7D9', '#D98F8F', '#C1A0E8', '#8AD9C3', '#E8D98F', '#A0AED9', '#B5D98F', '#D9A0C8', '#8FD9D9', '#D9B58F'];
 let rawSales = [], rawItems = [];
 let F = { metric: 'rev', channel: 'all', payment: 'all', product: 'all', prodSearch: '', prodMetric: 'rev' };
 
@@ -157,21 +162,44 @@ async function fetchAll(endpoint, startStr, endStr) {
 }
 
 function renderControls() {
-  document.getElementById('modes').innerHTML = [['days', 'Período'], ['day', 'Dia'], ['month', 'Mês'], ['range', 'Intervalo']].map(([k, l]) =>
+  document.getElementById('modes').innerHTML = [['months', 'Meses'], ['day', 'Dia']].map(([k, l]) =>
     `<button class="${mode === k ? 'on' : ''}" onclick="setMode('${k}')">${l}</button>`).join('');
   const c = document.getElementById('periodCtl');
-  if (mode === 'days') c.innerHTML = `<span class="seg">${PERIODS.map(n =>
-    `<button class="${n === days ? 'on' : ''}" onclick="setDays(${n})">${n} dias</button>`).join('')}</span>`;
+  if (mode === 'months') {
+    const now = new Date();
+    let html = '';
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mk = fmtDate(d).slice(0, 7);
+      html += `<button class="chip ${monthsSel.includes(mk) ? 'on' : ''}" onclick="toggleMonth('${mk}')">${MN[d.getMonth()]}/${String(d.getFullYear()).slice(2)}</button>`;
+    }
+    c.innerHTML = `<span style="display:flex;gap:5px;flex-wrap:wrap;max-width:600px;">${html}</span>`;
+  }
   else if (mode === 'day') c.innerHTML = `<input type="date" value="${dateSel}" onchange="setDateSel(this.value)">`;
-  else if (mode === 'month') c.innerHTML = `<input type="month" value="${monthSel}" onchange="setMonthSel(this.value)">`;
-  else c.innerHTML = `<input type="date" value="${rangeStart}" onchange="setRangeStart(this.value)"> <span style="font-size:13px;color:#A6937D;">até</span> <input type="date" value="${rangeEnd}" onchange="setRangeEnd(this.value)">`;
+  else c.innerHTML = '';
 }
 function setMode(m) { mode = m; renderControls(); load(); }
-function setDays(n) { days = n; renderControls(); load(); }
+function toggleMonth(mk) {
+  const m = monthsSel.includes(mk) ? monthsSel.filter(x => x !== mk) : [...monthsSel, mk];
+  if (!m.length) return;
+  monthsSel = m.sort(); renderControls(); load();
+}
 function setDateSel(v) { if (v) { dateSel = v; load(); } }
 function setMonthSel(v) { if (v) { monthSel = v; load(); } }
 function setRangeStart(v) { if (v) { rangeStart = v; load(); } }
 function setRangeEnd(v) { if (v) { rangeEnd = v; load(); } }
+function monthRange(mk) {
+  const [y, m] = mk.split('-').map(Number);
+  const start = new Date(y, m - 1, 1);
+  let end = new Date(y, m, 0);
+  const today = new Date();
+  if (end > today && start <= today) end = today;
+  return { start, end };
+}
+function loadRanges() {
+  if (mode === 'months' && monthsSel.length) return monthsSel.slice().sort().map(monthRange);
+  return [range()];
+}
 function range() {
   if (mode === 'day' && dateSel) {
     const [y, m, d] = dateSel.split('-').map(Number);
@@ -207,13 +235,14 @@ async function load() {
   document.getElementById('content').innerHTML =
     '<div class="loading"><div class="spinner"></div>Buscando vendas na Saipos…</div>';
   try {
-    const { start, end } = range();
     const chunks = [];
-    for (let s = new Date(start); s <= end;) {
-      const e = new Date(s); e.setDate(e.getDate() + 13);
-      const ce = e < end ? e : end;
-      chunks.push([fmtDate(s), fmtDate(ce)]);
-      s = new Date(ce); s.setDate(s.getDate() + 1);
+    for (const { start, end } of loadRanges()) {
+      for (let s = new Date(start); s <= end;) {
+        const e = new Date(s); e.setDate(e.getDate() + 13);
+        const ce = e < end ? e : end;
+        chunks.push([fmtDate(s), fmtDate(ce)]);
+        s = new Date(ce); s.setDate(s.getDate() + 1);
+      }
     }
     const localSales = [], localItems = [];
     for (const [cs, ce] of chunks) {
@@ -282,18 +311,49 @@ function render() {
     byDay[s.shift_date] = byDay[s.shift_date] || { rev: 0, n: 0 };
     byDay[s.shift_date].rev += s.total_amount || 0; byDay[s.shift_date].n++;
   }
-  const { start: rngStart, end: rngEnd } = range();
-  const spanDays = Math.round((new Date(rngEnd.getFullYear(), rngEnd.getMonth(), rngEnd.getDate()) - new Date(rngStart.getFullYear(), rngStart.getMonth(), rngStart.getDate())) / 864e5) + 1;
-  const daily = [];
-  for (let i = 0; i < spanDays; i++) {
-    const d = new Date(rngStart.getFullYear(), rngStart.getMonth(), rngStart.getDate() + i);
-    const v = byDay[fmtDate(d)] || { rev: 0, n: 0 };
-    daily.push({ d, rev: v.rev, n: v.n, ticket: v.n ? v.rev / v.n : 0 });
+  let selRanges;
+  if (mode === 'months' && monthsSel.length) {
+    selRanges = monthsSel.slice().sort().map((mk, i) => {
+      const r = monthRange(mk);
+      const [y, m] = mk.split('-').map(Number);
+      return { ...r, label: MN[m - 1] + '/' + String(y).slice(2), color: PALETTE[i % PALETTE.length] };
+    });
+  } else {
+    selRanges = [{ ...range(), label: '', color: '#E8B36A' }];
   }
+  const rngStart = selRanges[0].start, rngEnd = selRanges[selRanges.length - 1].end;
+  const perRange = selRanges.map(r => {
+    const span = Math.round((new Date(r.end.getFullYear(), r.end.getMonth(), r.end.getDate()) - new Date(r.start.getFullYear(), r.start.getMonth(), r.start.getDate())) / 864e5) + 1;
+    const arr = [];
+    for (let i = 0; i < span; i++) {
+      const d = new Date(r.start.getFullYear(), r.start.getMonth(), r.start.getDate() + i);
+      const v = byDay[fmtDate(d)] || { rev: 0, n: 0 };
+      arr.push({ d, rev: v.rev, n: v.n, ticket: v.n ? v.rev / v.n : 0 });
+    }
+    return { ...r, days: arr };
+  });
+  const daily = perRange.flatMap(r => r.days);
+  const spanDays = daily.length;
+  const isCompare = selRanges.length > 1;
 
   // evolution chart
   const metricDefs = { rev: ['Faturamento', x => x.rev, brl0], n: ['Pedidos', x => x.n, v => Math.round(v).toLocaleString('pt-BR')], ticket: ['Ticket médio', x => x.ticket, brl0] };
   const [mLabel, mGet, mFmt] = metricDefs[F.metric];
+  let evoSvg, evoCols, xlabs, evoLbls, maxV;
+  if (isCompare) {
+    const W = 800, H = 200;
+    const n = Math.max(...perRange.map(r => r.days.length));
+    const allSeries = perRange.map(r => r.days.map(mGet));
+    maxV = Math.max(1, ...allSeries.flat());
+    const px = i => n > 1 ? i / (n - 1) * W : W / 2;
+    const py = v => H - (v / maxV) * (H - 10);
+    const paths = allSeries.map((ser, ri) => `<path d="M${ser.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' L')}" fill="none" stroke="${perRange[ri].color}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>`).join('');
+    evoSvg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" y1="${py(maxV / 2)}" x2="${W}" y2="${py(maxV / 2)}" stroke="#372C20" stroke-width="1" stroke-dasharray="4 4"/>${paths}</svg>`;
+    evoCols = Array.from({ length: n }, (_, i) => `<div title="${esc('Dia ' + (i + 1) + ' — ' + perRange.map((r, ri) => r.days[i] ? r.label + ': ' + mFmt(allSeries[ri][i]) : null).filter(Boolean).join(' · '))}"></div>`).join('');
+    const step = Math.max(1, Math.ceil(n / 10));
+    xlabs = Array.from({ length: n }, (_, i) => `<div>${(i % step === 0 || i === n - 1) ? (i + 1) : ''}</div>`).join('');
+    evoLbls = '';
+  } else {
   let evoPts;
   if (spanDays === 1) {
     const byH = {};
@@ -315,7 +375,7 @@ function render() {
     }));
   }
   const series = evoPts.map(mGet);
-  const maxV = Math.max(1, ...series);
+  maxV = Math.max(1, ...series);
   const W = 800, H = 200, n = series.length;
   const px = i => n > 1 ? i / (n - 1) * W : W / 2;
   const py = v => H - (v / maxV) * (H - 10);
@@ -323,20 +383,37 @@ function render() {
   const lineD = 'M' + linePts;
   const areaD = lineD + ` L${W},${H} L0,${H} Z`;
   const dots = evoPts.map((x, i) => (x.n || F.metric !== 'rev') ? `<circle cx="${px(i).toFixed(1)}" cy="${py(series[i]).toFixed(1)}" r="3" fill="#E8B36A"/>` : '').join('');
-  const evoSvg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+  evoSvg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
     <defs><linearGradient id="gEvo" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#D9A05B" stop-opacity="0.35"/><stop offset="100%" stop-color="#D9A05B" stop-opacity="0.02"/>
     </linearGradient></defs>
     <line x1="0" y1="${py(maxV / 2)}" x2="${W}" y2="${py(maxV / 2)}" stroke="#372C20" stroke-width="1" stroke-dasharray="4 4"/>
     <path d="${areaD}" fill="url(#gEvo)"/>
     <path d="${lineD}" fill="none" stroke="#E8B36A" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>${dots}</svg>`;
-  const evoCols = evoPts.map((x, i) =>
+  evoCols = evoPts.map((x, i) =>
     `<div title="${esc(x.tipDate + ' · ' + mLabel + ': ' + mFmt(series[i]) + ' · ' + x.n + ' pedidos · ' + brl(x.rev))}"></div>`).join('');
   const step = Math.max(1, Math.ceil(n / 10));
-  const xlabs = evoPts.map((x, i) =>
+  xlabs = evoPts.map((x, i) =>
     `<div>${(i % step === 0 || i === n - 1) ? x.xLabel : ''}</div>`).join('');
-  const evoLbls = evoPts.map((x, i) => ((i % step === 0 || i === n - 1) && series[i] > 0)
+  evoLbls = evoPts.map((x, i) => ((i % step === 0 || i === n - 1) && series[i] > 0)
     ? `<div class="ptlbl" style="left:${(n > 1 ? i / (n - 1) * 100 : 50).toFixed(2)}%;top:${(py(series[i]) / H * 100).toFixed(2)}%">${mFmt(series[i])}</div>` : '').join('');
+  }
+  const legendHtml = isCompare ? perRange.map(r => `<div style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#A6937D;"><span style="width:10px;height:10px;border-radius:3px;background:${r.color};display:inline-block;"></span>${r.label}</div>`).join('') : '';
+  let compareHtml = '';
+  if (isCompare) {
+    const totals = perRange.map(r => ({ rev: r.days.reduce((a, x) => a + x.rev, 0), n: r.days.reduce((a, x) => a + x.n, 0) }));
+    const maxRevM = Math.max(1, ...totals.map(t => t.rev));
+    compareHtml = `<div class="card"><div class="sect-title" style="margin-bottom:14px">Comparação de meses</div><div class="rows">` + perRange.map((r, i) => {
+      const t = totals[i], prev = i ? totals[i - 1].rev : null, delta = prev ? (t.rev - prev) / prev : null;
+      return `<div style="display:grid;grid-template-columns:76px minmax(0,1fr) 130px 90px 110px;gap:12px;align-items:center;">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;"><span style="width:10px;height:10px;border-radius:3px;background:${r.color};flex-shrink:0;"></span>${r.label}</div>
+        <div class="track" style="height:10px"><div style="background:${r.color};width:${Math.round(t.rev / maxRevM * 100)}%"></div></div>
+        <div style="text-align:right"><div style="font-size:13.5px;font-weight:700">${brl0(t.rev)}</div><div style="font-size:11px;white-space:nowrap;color:${delta === null ? '#A6937D' : delta >= 0 ? '#9DBA7F' : '#E08A66'}">${delta === null ? '' : (delta >= 0 ? '+' : '') + (delta * 100).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '% vs ' + perRange[i - 1].label}</div></div>
+        <div style="font-size:12.5px;color:#A6937D;text-align:right">${t.n.toLocaleString('pt-BR')} pedidos</div>
+        <div style="font-size:12.5px;color:#A6937D;text-align:right">ticket ${brl(t.n ? t.rev / t.n : 0)}</div>
+      </div>`;
+    }).join('') + `</div></div>`;
+  }
   const metricTabsHtml = Object.entries(metricDefs).map(([k, [label]]) =>
     `<button class="${F.metric === k ? 'on' : ''}" onclick="setF('metric','${k}')">${label}</button>`).join('');
 
@@ -417,7 +494,7 @@ function render() {
     ? `<button class="clearbtn" onclick="clearFilters()">limpar filtros</button><span style="font-size:12px;color:#A6937D;">mostrando: ${esc(noteParts.join(' · '))}</span>` : '';
 
   const kpis = [
-    { l: 'Faturamento', v: brl(revenue), s: filtersActive ? 'com filtros aplicados' : (mode === 'day' ? rngStart.toLocaleDateString('pt-BR') : mode === 'month' ? rngStart.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : mode === 'range' ? rngStart.toLocaleDateString('pt-BR') + ' – ' + rngEnd.toLocaleDateString('pt-BR') : 'últimos ' + days + ' dias') },
+    { l: 'Faturamento', v: brl(revenue), s: filtersActive ? 'com filtros aplicados' : (mode === 'day' ? rngStart.toLocaleDateString('pt-BR') : mode === 'months' ? selRanges.map(r => r.label).join(', ') : mode === 'range' ? rngStart.toLocaleDateString('pt-BR') + ' – ' + rngEnd.toLocaleDateString('pt-BR') : 'últimos ' + days + ' dias') },
     { l: 'Pedidos', v: orders.toLocaleString('pt-BR'), s: filtersActive ? 'de ' + valid.length + ' no período' : (canceledCount ? canceledCount + ' cancelados' : 'nenhum cancelado') },
     { l: 'Ticket médio', v: brl(ticket), s: 'por pedido' },
     { l: 'Itens vendidos', v: itemCount.toLocaleString('pt-BR'), s: (orders ? (itemCount / orders).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) : '0') + ' itens/pedido' },
@@ -429,8 +506,9 @@ function render() {
         <span class="fl">Filtros</span>${chanSel}${paySel}${prodSel}${clearHtml}
       </div>
       <div class="grid-kpi">${kpis.map(k => `<div class="card kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="s">${k.s}</div></div>`).join('')}</div>
+      ${compareHtml}
       <div class="card">
-        <div class="sect-head"><div class="sect-title">Evolução diária</div><div class="seg2">${metricTabsHtml}</div></div>
+        <div class="sect-head"><div class="sect-title">${isCompare ? 'Evolução por dia do mês' : 'Evolução diária'}</div><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">${legendHtml}<div class="seg2">${metricTabsHtml}</div></div></div>
         <div class="evo">
           <div class="ylab"><span>${mFmt(maxV)}</span><span>${mFmt(maxV / 2)}</span><span>0</span></div>
           <div class="plot">${evoSvg}${evoLbls}<div class="cols">${evoCols}</div></div>
@@ -464,6 +542,7 @@ function render() {
 
 dateSel = fmtDate(new Date());
 monthSel = dateSel.slice(0, 7);
+monthsSel = [monthSel];
 const _wk = new Date(); _wk.setDate(_wk.getDate() - 6);
 rangeStart = fmtDate(_wk); rangeEnd = dateSel;
 renderControls();
