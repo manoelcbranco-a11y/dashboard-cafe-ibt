@@ -55,7 +55,9 @@
   .hbars{display:flex;align-items:flex-end;gap:4px;height:120px;}
   .hbars .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;}
   .hbars .bar{width:100%;max-width:26px;border-radius:5px 5px 2px 2px;background:#8C6A45;min-height:2px;}
+  .hbars .val{font-size:10px;font-weight:600;color:#A6937D;}
   .hbars .lbl{font-size:10px;color:#A6937D;}
+  .ptlbl{position:absolute;transform:translate(-50%,-130%);font-size:10.5px;font-weight:600;color:#E8C285;white-space:nowrap;pointer-events:none;}
   .wbars{display:flex;align-items:flex-end;gap:6px;height:120px;}
   .wbars .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;}
   .wbars .val{font-size:10px;font-weight:600;color:#A6937D;white-space:nowrap;}
@@ -66,11 +68,12 @@
   .row .top b{font-weight:600;} .row .top span{color:#A6937D;}
   .track{height:8px;border-radius:4px;background:#2E2418;overflow:hidden;}
   .track>div{height:100%;border-radius:4px;}
-  .prod{display:grid;grid-template-columns:26px 1fr 70px 100px;gap:10px;align-items:center;}
+  .prod{display:grid;grid-template-columns:26px 1fr 60px 88px 92px;gap:10px;align-items:center;}
   .prod .rank{font-size:12px;font-weight:700;color:#D9A05B;}
   .prod .name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .prod .track{height:6px;margin-top:5px;}
   .prod .qty{font-size:12.5px;color:#A6937D;text-align:right;}
+  .prod .unit{font-size:12px;color:#A6937D;text-align:right;white-space:nowrap;}
   .prod .rev{font-size:13px;font-weight:700;text-align:right;}
   .footnote{font-size:11.5px;color:#6E6152;text-align:center;}
   .loading{display:flex;flex-direction:column;align-items:center;gap:14px;padding:120px 0;color:#A6937D;font-size:14px;}
@@ -327,6 +330,8 @@ function render() {
   const step = Math.max(1, Math.ceil(n / 10));
   const xlabs = evoPts.map((x, i) =>
     `<div>${(i % step === 0 || i === n - 1) ? x.xLabel : ''}</div>`).join('');
+  const evoLbls = evoPts.map((x, i) => ((i % step === 0 || i === n - 1) && series[i] > 0)
+    ? `<div class="ptlbl" style="left:${(n > 1 ? i / (n - 1) * 100 : 50).toFixed(2)}%;top:${(py(series[i]) / H * 100).toFixed(2)}%">${mFmt(series[i])}</div>` : '').join('');
   const metricTabsHtml = Object.entries(metricDefs).map(([k, [label]]) =>
     `<button class="${F.metric === k ? 'on' : ''}" onclick="setF('metric','${k}')">${label}</button>`).join('');
 
@@ -342,6 +347,7 @@ function render() {
   let hourlyHtml = '';
   for (let h = hMin; h <= hMax; h++) {
     hourlyHtml += `<div class="col" title="${(byHour[h] || 0)} pedidos entre ${h}h e ${h + 1}h">
+      <div class="val">${byHour[h] || ''}</div>
       <div class="bar" style="height:${Math.round((byHour[h] || 0) / maxH * 100)}%"></div><div class="lbl">${h}h</div></div>`;
   }
 
@@ -391,7 +397,7 @@ function render() {
     <div class="prod"><div class="rank">${i + 1}</div>
       <div style="min-width:0"><div class="name">${esc(name)}</div>
       <div class="track"><div style="background:#D9A05B;width:${Math.max(2, Math.round((F.prodMetric === 'qty' ? v.qty : v.rev) / maxProd * 100))}%"></div></div></div>
-      <div class="qty">${v.qty.toLocaleString('pt-BR')} un</div><div class="rev">${brl(v.rev)}</div></div>`).join('')
+      <div class="qty">${v.qty.toLocaleString('pt-BR')} un</div><div class="unit">${v.qty ? brl(v.rev / v.qty) + '/un' : '—'}</div><div class="rev">${brl(v.rev)}</div></div>`).join('')
     : `<div style="font-size:13px;color:#A6937D;padding:12px 0;">Nenhum produto encontrado para "${esc(F.prodSearch)}".</div>`;
   const prodTabsHtml = [['rev', 'receita'], ['qty', 'quantidade']].map(([k, label]) =>
     `<button class="${F.prodMetric === k ? 'on' : ''}" onclick="setF('prodMetric','${k}')">${label}</button>`).join('');
@@ -425,7 +431,7 @@ function render() {
         <div class="sect-head"><div class="sect-title">Evolução diária</div><div class="seg2">${metricTabsHtml}</div></div>
         <div class="evo">
           <div class="ylab"><span>${mFmt(maxV)}</span><span>${mFmt(maxV / 2)}</span><span>0</span></div>
-          <div class="plot">${evoSvg}<div class="cols">${evoCols}</div></div>
+          <div class="plot">${evoSvg}${evoLbls}<div class="cols">${evoCols}</div></div>
         </div>
         <div class="xlabs">${xlabs}</div>
       </div>
