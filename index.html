@@ -3,99 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Café do IBT · Dashboard de vendas</title>
+<title>Café do IBT · Painel gerencial</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  html,body{margin:0;padding:0;background:#101319;color:#e6e9f0;font-family:'Archivo',sans-serif;}
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:#171210;color:#F2E9DB;font-family:'Archivo',sans-serif;}
-  a{color:#D9A05B;text-decoration:none;} a:hover{color:#E8C285;}
+  a{color:#5ec9c0;text-decoration:none;} a:hover{color:#8adfd8;}
+  ::selection{background:rgba(94,201,192,0.3);}
+  ::-webkit-scrollbar{width:10px;height:10px;} ::-webkit-scrollbar-thumb{background:#2a3140;border-radius:6px;} ::-webkit-scrollbar-track{background:transparent;}
+  input[type=date]{color-scheme:dark;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  .wrap{min-height:100vh;padding:28px 32px 48px;max-width:1280px;margin:0 auto;}
-  header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
-  .brand{font-family:'Lora',serif;font-style:italic;font-size:15px;color:#D9A05B;}
-  h1{margin:2px 0;font-family:'Lora',serif;font-weight:600;font-size:30px;letter-spacing:-0.01em;color:#F7F0E4;}
-  .meta{font-size:12.5px;color:#A6937D;}
-  .controls{display:flex;align-items:center;gap:10px;}
-  .seg{display:flex;gap:4px;background:#221B15;border:1px solid #372C20;border-radius:10px;padding:4px;}
-  .seg button, .seg2 button{border:none;cursor:pointer;font-family:'Archivo',sans-serif;font-weight:600;background:transparent;color:#A6937D;border-radius:7px;}
-  .seg button{font-size:13px;padding:7px 14px;}
-  .seg2{display:flex;gap:3px;background:#221B15;border:1px solid #372C20;border-radius:8px;padding:3px;}
-  .seg2 button{font-size:12px;padding:5px 10px;border-radius:5px;}
-  .seg button.on,.seg2 button.on{background:#3A2D1D;color:#F2E9DB;}
-  .chip{border:1px solid #372C20;cursor:pointer;background:transparent;color:#A6937D;font-family:'Archivo',sans-serif;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;}
-  .chip.on{background:#3A2D1D;color:#F2E9DB;border-color:#D9A05B;}
-  .refresh{border:1px solid #4A3A28;cursor:pointer;background:#2A2118;color:#E8C285;font-family:'Archivo',sans-serif;font-size:13px;font-weight:600;padding:11px 16px;border-radius:10px;}
-  .refresh:hover{background:#332818;}
-  .card{background:#201914;border:1px solid #372C20;border-radius:14px;padding:20px 22px;}
-  .filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-radius:12px;padding:12px 16px;}
-  .filters .fl{font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#A6937D;}
-  select,input[type=text],input[type=date],input[type=month]{background:#2A2118;color:#F2E9DB;border:1px solid #4A3A28;border-radius:8px;padding:8px 10px;font-family:'Archivo',sans-serif;font-size:13px;outline:none;color-scheme:dark;}
-  input[type=date],input[type=month]{border-radius:10px;padding:9px 12px;}
-  select{cursor:pointer;max-width:260px;}
-  select option{background:#201914;color:#F2E9DB;}
-  .clearbtn{border:none;cursor:pointer;background:transparent;color:#D9A05B;font-family:'Archivo',sans-serif;font-size:13px;font-weight:600;text-decoration:underline;padding:8px 6px;}
-  .grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
-  .kpi{display:flex;flex-direction:column;gap:6px;padding:18px 20px;}
-  .kpi .l{font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#A6937D;}
-  .kpi .v{font-size:28px;font-weight:700;letter-spacing:-0.02em;color:#F7F0E4;}
-  .kpi .s{font-size:12.5px;color:#A6937D;}
-  .sect-title{font-family:'Lora',serif;font-size:17px;font-weight:600;color:#F7F0E4;}
-  .sect-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
-  .stack{display:flex;flex-direction:column;gap:16px;}
-  .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start;}
-  .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;align-items:start;}
-  .evo{display:flex;gap:10px;}
-  .evo .ylab{display:flex;flex-direction:column;justify-content:space-between;height:200px;font-size:10.5px;color:#A6937D;text-align:right;min-width:56px;}
-  .evo .plot{flex:1;position:relative;height:200px;border-bottom:1px solid #372C20;}
-  .evo svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
-  .evo .cols{position:absolute;inset:0;display:flex;}
-  .evo .cols div{flex:1;height:100%;}
-  .evo .cols div:hover{background:rgba(217,160,91,0.08);}
-  .xlabs{display:flex;margin-left:66px;margin-top:6px;}
-  .xlabs div{flex:1;font-size:10px;color:#A6937D;text-align:center;white-space:nowrap;}
-  .hbars{display:flex;align-items:flex-end;gap:4px;height:120px;}
-  .hbars .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;}
-  .hbars .bar{width:100%;max-width:26px;border-radius:5px 5px 2px 2px;background:#8C6A45;min-height:2px;}
-  .hbars .val{font-size:10px;font-weight:600;color:#A6937D;}
-  .hbars .lbl{font-size:10px;color:#A6937D;}
-  .ptlbl{position:absolute;transform:translate(-50%,-130%);font-size:10.5px;font-weight:600;color:#E8C285;white-space:nowrap;pointer-events:none;}
-  .wbars{display:flex;align-items:flex-end;gap:6px;height:120px;}
-  .wbars .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;}
-  .wbars .val{font-size:10px;font-weight:600;color:#A6937D;white-space:nowrap;}
-  .wbars .bar{width:100%;max-width:34px;border-radius:5px 5px 2px 2px;min-height:2px;}
-  .wbars .lbl{font-size:10.5px;color:#A6937D;}
-  .rows{display:flex;flex-direction:column;gap:12px;}
-  .row .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
-  .row .top b{font-weight:600;} .row .top span{color:#A6937D;}
-  .track{height:8px;border-radius:4px;background:#2E2418;overflow:hidden;}
+  .wrap{max-width:1480px;margin:0 auto;padding:28px 32px 64px;display:flex;flex-direction:column;gap:22px;}
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;border-bottom:1px solid #262c3a;padding-bottom:20px;}
+  .brand{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#5ec9c0;font-weight:600;}
+  h1{margin:2px 0;font-size:30px;font-weight:800;letter-spacing:-0.01em;}
+  .meta{font-size:12.5px;color:#8a93a8;}
+  .ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+  .seg{display:flex;gap:4px;background:#171b24;border:1px solid #262c3a;border-radius:9px;padding:4px;}
+  .seg button{border:none;cursor:pointer;font-family:'Archivo',sans-serif;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:7px;background:transparent;color:#8a93a8;}
+  .seg button.on{background:#5ec9c0;color:#0b1013;}
+  .seg2{display:flex;gap:3px;background:#141821;border:1px solid #262c3a;border-radius:8px;padding:3px;}
+  .seg2 button{border:none;cursor:pointer;font-family:'Archivo',sans-serif;font-size:12px;font-weight:600;padding:5px 11px;border-radius:5px;background:transparent;color:#8a93a8;}
+  .seg2 button.on{background:#1d3a37;color:#8adfd8;}
+  .chip{border:1px solid #262c3a;cursor:pointer;background:transparent;color:#8a93a8;font-family:'Archivo',sans-serif;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;}
+  .chip.on{background:#1d3a37;color:#8adfd8;border-color:#5ec9c0;}
+  .refresh{border:1px solid #2a3140;cursor:pointer;background:#1d222e;color:#8adfd8;font-family:'Archivo',sans-serif;font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:8px;}
+  input[type=date],input[type=text]{background:#141821;color:#e6e9f0;border:1px solid #2a3140;border-radius:8px;padding:7px 10px;font-family:'Archivo',sans-serif;font-size:12.5px;outline:none;}
+  select{background:#141821;color:#e6e9f0;border:1px solid #2a3140;border-radius:8px;padding:7px 9px;font-family:'Archivo',sans-serif;font-size:12.5px;outline:none;cursor:pointer;max-width:220px;}
+  select option{background:#171b24;}
+  .card{background:#171b24;border:1px solid #262c3a;border-radius:12px;padding:20px;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+  .kpi{background:#171b24;border:1px solid #262c3a;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:7px;}
+  .kpi .l{font-size:11px;color:#8a93a8;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;}
+  .kpi .v{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:600;letter-spacing:-0.02em;}
+  .kpi .s{font-size:11.5px;color:#8a93a8;}
+  .st{font-size:16px;font-weight:700;}
+  .sub{font-size:11.5px;color:#8a93a8;}
+  .grid-auto{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start;}
+  .track{height:8px;border-radius:4px;background:#1d222e;overflow:hidden;}
   .track>div{height:100%;border-radius:4px;}
-  .prod{display:grid;grid-template-columns:26px minmax(0,1fr) auto 88px;gap:10px;align-items:center;}
-  .prod .rank{font-size:12px;font-weight:700;color:#D9A05B;}
-  .prod .name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .prod .track{height:6px;margin-top:5px;}
-  .prod .unit{font-size:12px;color:#A6937D;text-align:right;white-space:nowrap;}
-  .prod .rev{font-size:13px;font-weight:700;text-align:right;}
-  .footnote{font-size:11.5px;color:#6E6152;text-align:center;}
-  .loading{display:flex;flex-direction:column;align-items:center;gap:14px;padding:120px 0;color:#A6937D;font-size:14px;}
-  .spinner{width:34px;height:34px;border-radius:50%;border:3px solid #372C20;border-top-color:#D9A05B;animation:spin .8s linear infinite;}
-  .errbox{max-width:520px;margin:80px auto;border-color:#6B3A28;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;}
-  .errbox .t{font-family:'Lora',serif;font-size:19px;font-weight:600;color:#E08A66;}
-  .errbox .m{font-size:13.5px;color:#A6937D;line-height:1.5;}
-  .errbox button{border:none;cursor:pointer;background:#D9A05B;color:#241A10;font-family:'Archivo',sans-serif;font-size:13px;font-weight:700;padding:10px 22px;border-radius:9px;}
+  .loading{display:flex;flex-direction:column;align-items:center;gap:14px;padding:130px 0;color:#8a93a8;font-size:14px;}
+  .spinner{width:34px;height:34px;border-radius:50%;border:3px solid #262c3a;border-top-color:#5ec9c0;animation:spin .8s linear infinite;}
+  .errbox{max-width:540px;margin:70px auto;border-color:#6b3a3a;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;}
+  .footnote{font-size:11.5px;color:#4d5568;text-align:center;padding-top:4px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div>
-      <div class="brand">Café do IBT</div>
-      <h1>Dashboard de vendas</h1>
+      <div class="brand">Café do IBT · Painel gerencial</div>
+      <h1>Vendas &amp; financeiro</h1>
       <div class="meta" id="meta">Dados Saipos · carregando…</div>
     </div>
-    <div class="controls">
+    <div class="ctrls">
       <div class="seg" id="modes"></div>
-      <span id="periodCtl" style="display:flex;align-items:center;gap:10px;"></span>
+      <span id="periodCtl" style="display:flex;gap:5px;flex-wrap:wrap;max-width:560px;justify-content:flex-end;"></span>
       <button class="refresh" onclick="load()">Atualizar</button>
     </div>
   </header>
@@ -103,460 +69,394 @@
 </div>
 <script>
 const REFRESH_MINUTES = 5;
-const PERIODS = [7, 15, 30];
 const FN = '/.netlify/functions/saipos';
-const TYPE_NAMES = { 1: 'Entrega', 2: 'Balcão / retirada', 3: 'Salão', 4: 'Ficha / senha' };
-const WD = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const TYPE_NAMES = { 1:'Entrega', 2:'Balcão / retirada', 3:'Salão', 4:'Ficha / senha' };
+const WD = ['dom','seg','ter','qua','qui','sex','sáb'];
+const MN = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const PALETTE = ['#5ec9c0','#d9ad63','#c96b5c','#57c98a','#a98fd9','#8adfd8','#e8c98f','#7fa8d9'];
+const ENTRADA_RE = /caixa|receita|venda|recebiment|entrada|frente/i;
 
-let days = 15, lastUpdate = null;
-let mode = 'months', dateSel = '', monthSel = '', rangeStart = '', rangeEnd = '';
-let monthsSel = [];
-const MN = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-const PALETTE = ['#E8B36A', '#9DBA7F', '#8FB7D9', '#D98F8F', '#C1A0E8', '#8AD9C3', '#E8D98F', '#A0AED9', '#B5D98F', '#D9A0C8', '#8FD9D9', '#D9B58F'];
-let rawSales = [], rawItems = [];
-let F = { metric: 'rev', channel: 'all', payment: 'all', product: 'all', prodSearch: '', prodMetric: 'rev' };
+let mode = 'months', monthsSel = [], dateSel = '';
+let F = { metric:'rev', channel:'all', payment:'all', product:'all', prodSearch:'', prodMetric:'rev', dreExpanded:true };
+let rawSales = [], rawItems = [], fin = [], stockRaw = [], lastUpdate = null;
 
-const pad = n => String(n).padStart(2, '0');
-const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const brl = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const brl0 = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
-const pct = v => (v * 100).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '%';
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-// horas após a meia-noite pertencem ao turno do dia anterior → ordenadas no fim do eixo
-const shiftHour = s => {
-  const h = parseInt((s.created_at || '').slice(11, 13), 10);
-  if (isNaN(h)) return null;
-  return (s.created_at || '').slice(0, 10) > (s.shift_date || '') ? h + 24 : h;
-};
+const pad = n => String(n).padStart(2,'0');
+const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const brl = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const brl0 = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const pct = v => (v*100).toLocaleString('pt-BR',{maximumFractionDigits:0})+'%';
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const shiftHour = s => { const h=parseInt((s.created_at||'').slice(11,13),10); if(isNaN(h))return null; return (s.created_at||'').slice(0,10)>(s.shift_date||'')?h+24:h; };
 
 const apiCache = {};
-async function apiPage(endpoint, params) {
-  const qs = new URLSearchParams(params).toString();
+async function apiPage(endpoint, dateCol, startStr, endStr, offset) {
+  const qs = new URLSearchParams({ endpoint, p_date_column_filter:dateCol, p_filter_date_start:startStr+'T00:00:00', p_filter_date_end:endStr+'T23:59:59', p_limit:1000, p_offset:offset });
   let lastMsg = '';
-  for (let attempt = 0; attempt < 6; attempt++) {
-    if (attempt) await new Promise(res => setTimeout(res, Math.min(8000, 1000 * Math.pow(2, attempt - 1))));
+  for (let attempt=0; attempt<6; attempt++) {
+    if (attempt) await new Promise(r=>setTimeout(r, Math.min(8000,800*Math.pow(2,attempt-1))));
     let r;
-    try { r = await fetch(`${FN}?endpoint=${endpoint}&${qs}`); }
-    catch (e) { lastMsg = 'Falha de rede'; continue; }
+    try { r = await fetch(`${FN}?${qs}`); } catch(e) { lastMsg='Falha de rede'; continue; }
     if (r.ok) return r.json();
-    lastMsg = 'HTTP ' + r.status;
-    try { lastMsg += ' — ' + ((await r.json()).message || ''); } catch (e) {}
-    if (r.status < 500 && r.status !== 429) throw new Error(lastMsg);
+    lastMsg = 'HTTP '+r.status;
+    if (r.status<500 && r.status!==429) { try{ lastMsg+=' — '+((await r.json()).message||''); }catch(e){} throw new Error(lastMsg); }
   }
-  throw new Error(lastMsg + ' (a API da Saipos está instável no momento — tentamos 6 vezes; aguarde alguns minutos)');
+  throw new Error(lastMsg+' (API da Saipos instável — 6 tentativas)');
 }
-
-async function fetchAll(endpoint, startStr, endStr) {
-  // cache: períodos já encerrados não mudam; período atual vale por 4 min
-  const key = endpoint + '|' + startStr + '|' + endStr;
+async function fetchAll(endpoint, dateCol, startStr, endStr) {
+  const key = endpoint+'|'+startStr+'|'+endStr;
   const hit = apiCache[key];
-  if (hit && (endStr < fmtDate(new Date()) || Date.now() - hit.t < 4 * 60 * 1000)) return hit.rows;
+  if (hit && (endStr < fmtDate(new Date()) || Date.now()-hit.t < 4*60*1000)) return hit.rows;
   const rows = [];
-  for (let offset = 0, i = 0; i < 12; i++, offset += 1000) {
-    const page = await apiPage(endpoint, {
-      p_date_column_filter: 'shift_date',
-      p_filter_date_start: startStr + 'T00:00:00',
-      p_filter_date_end: endStr + 'T23:59:59',
-      p_limit: 1000, p_offset: offset,
-    });
+  for (let offset=0,i=0; i<12; i++,offset+=1000) {
+    const page = await apiPage(endpoint, dateCol, startStr, endStr, offset);
     rows.push(...page);
-    if (page.length < 1000) break;
+    if (!page || page.length<1000) break;
   }
-  apiCache[key] = { rows, t: Date.now() };
+  apiCache[key] = { rows, t:Date.now() };
   return rows;
 }
 
-function renderControls() {
-  document.getElementById('modes').innerHTML = [['months', 'Meses'], ['day', 'Dia']].map(([k, l]) =>
-    `<button class="${mode === k ? 'on' : ''}" onclick="setMode('${k}')">${l}</button>`).join('');
+function monthRange(mk){ const [y,m]=mk.split('-').map(Number); const start=new Date(y,m-1,1); let end=new Date(y,m,0); const t=new Date(); if(end>t&&start<=t)end=t; return {start,end}; }
+function loadRanges(){
+  if (mode==='day' && dateSel){ const [y,m,d]=dateSel.split('-').map(Number); const dt=new Date(y,m-1,d); return [{start:dt,end:new Date(dt)}]; }
+  if (mode==='months' && monthsSel.length) return monthsSel.slice().sort().map(monthRange);
+  return [monthRange(fmtDate(new Date()).slice(0,7))];
+}
+
+function renderControls(){
+  document.getElementById('modes').innerHTML = [['months','Meses'],['day','Dia']].map(([k,l])=>
+    `<button class="${mode===k?'on':''}" onclick="setMode('${k}')">${l}</button>`).join('');
   const c = document.getElementById('periodCtl');
-  if (mode === 'months') {
-    const now = new Date();
-    let html = '';
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const mk = fmtDate(d).slice(0, 7);
-      html += `<button class="chip ${monthsSel.includes(mk) ? 'on' : ''}" onclick="toggleMonth('${mk}')">${MN[d.getMonth()]}/${String(d.getFullYear()).slice(2)}</button>`;
-    }
-    c.innerHTML = `<span style="display:flex;gap:5px;flex-wrap:wrap;max-width:600px;">${html}</span>`;
-  }
-  else if (mode === 'day') c.innerHTML = `<input type="date" value="${dateSel}" onchange="setDateSel(this.value)">`;
-  else c.innerHTML = '';
+  if (mode==='months'){
+    const now=new Date(); let html='';
+    for(let i=11;i>=0;i--){ const d=new Date(now.getFullYear(),now.getMonth()-i,1); const mk=fmtDate(d).slice(0,7);
+      html+=`<button class="chip ${monthsSel.includes(mk)?'on':''}" onclick="toggleMonth('${mk}')">${MN[d.getMonth()]}/${String(d.getFullYear()).slice(2)}</button>`; }
+    c.innerHTML = html;
+  } else c.innerHTML = `<input type="date" value="${dateSel}" onchange="setDateSel(this.value)">`;
 }
-function setMode(m) { mode = m; renderControls(); load(); }
-function toggleMonth(mk) {
-  const m = monthsSel.includes(mk) ? monthsSel.filter(x => x !== mk) : [...monthsSel, mk];
-  if (!m.length) return;
-  monthsSel = m.sort(); renderControls(); load();
-}
-function setDateSel(v) { if (v) { dateSel = v; load(); } }
-function setMonthSel(v) { if (v) { monthSel = v; load(); } }
-function setRangeStart(v) { if (v) { rangeStart = v; load(); } }
-function setRangeEnd(v) { if (v) { rangeEnd = v; load(); } }
-function monthRange(mk) {
-  const [y, m] = mk.split('-').map(Number);
-  const start = new Date(y, m - 1, 1);
-  let end = new Date(y, m, 0);
-  const today = new Date();
-  if (end > today && start <= today) end = today;
-  return { start, end };
-}
-function loadRanges() {
-  if (mode === 'months' && monthsSel.length) return monthsSel.slice().sort().map(monthRange);
-  return [range()];
-}
-function range() {
-  if (mode === 'day' && dateSel) {
-    const [y, m, d] = dateSel.split('-').map(Number);
-    const dt = new Date(y, m - 1, d);
-    return { start: dt, end: new Date(dt) };
-  }
-  if (mode === 'range' && rangeStart && rangeEnd) {
-    const parse = v => { const [y, m, d] = v.split('-').map(Number); return new Date(y, m - 1, d); };
-    let a = parse(rangeStart), b = parse(rangeEnd);
-    if (a > b) { const t = a; a = b; b = t; }
-    return { start: a, end: b };
-  }
-  if (mode === 'month' && monthSel) {
-    const [y, m] = monthSel.split('-').map(Number);
-    const start = new Date(y, m - 1, 1);
-    let end = new Date(y, m, 0);
-    const today = new Date();
-    if (end > today && start <= today) end = today;
-    return { start, end };
-  }
-  const end = new Date();
-  const start = new Date(); start.setDate(start.getDate() - (days - 1));
-  return { start, end };
-}
-function setF(k, v) { F[k] = v; render(); }
-function clearFilters() { F.channel = 'all'; F.payment = 'all'; F.product = 'all'; render(); }
-function setMeta(txt) { document.getElementById('meta').textContent = txt; }
+function setMode(m){ mode=m; renderControls(); load(); }
+function toggleMonth(mk){ const m=monthsSel.includes(mk)?monthsSel.filter(x=>x!==mk):[...monthsSel,mk]; if(!m.length)return; monthsSel=m.sort(); renderControls(); load(); }
+function setDateSel(v){ if(v){ dateSel=v; load(); } }
+function setF(k,v){ F[k]=v; render(); }
+function clearFilters(){ F.channel='all'; F.payment='all'; F.product='all'; render(); }
+function toggleDre(){ F.dreExpanded=!F.dreExpanded; render(); }
 
 let loadSeq = 0;
-async function load() {
+async function load(){
   const seq = ++loadSeq;
   renderControls();
-  document.getElementById('content').innerHTML =
-    '<div class="loading"><div class="spinner"></div>Buscando vendas na Saipos…</div>';
+  document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Buscando dados na Saipos…</div>';
   try {
-    const chunks = [];
-    for (const { start, end } of loadRanges()) {
-      for (let s = new Date(start); s <= end;) {
-        const e = new Date(s); e.setDate(e.getDate() + 13);
-        const ce = e < end ? e : end;
-        chunks.push([fmtDate(s), fmtDate(ce)]);
-        s = new Date(ce); s.setDate(s.getDate() + 1);
+    const tasks = [];
+    for (const {start,end} of loadRanges()){
+      for (let s=new Date(start); s<=end;){
+        const e=new Date(s); e.setDate(e.getDate()+13); const ce=e<end?e:end;
+        const cs=fmtDate(s), cEnd=fmtDate(ce);
+        tasks.push(['sales', fetchAll('search_sales','shift_date',cs,cEnd)]);
+        tasks.push(['items', fetchAll('sales_items','shift_date',cs,cEnd)]);
+        tasks.push(['fin', fetchAll('search_financial_transactions','payment_date',cs,cEnd)]);
+        s=new Date(ce); s.setDate(s.getDate()+1);
       }
     }
-    const localSales = [], localItems = [];
-    for (const [cs, ce] of chunks) {
-      const [sv, iv] = await Promise.all([fetchAll('search_sales', cs, ce), fetchAll('sales_items', cs, ce)]);
-      localSales.push(...sv); localItems.push(...iv);
-    }
-    if (seq !== loadSeq) return;
-    rawSales = localSales; rawItems = localItems;
-    lastUpdate = new Date();
-    setMeta('Dados Saipos · atualizado ' + lastUpdate.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' · auto-atualiza a cada ' + REFRESH_MINUTES + ' min');
+    const stockTask = fetchAll('search_ingredient_movement','date_movement', fmtDate(new Date(Date.now()-7*864e5)), fmtDate(new Date())).catch(()=>[]);
+    const results = await Promise.all(tasks.map(t=>t[1]));
+    const stk = await stockTask;
+    if (seq!==loadSeq) return;
+    const S=[], I=[], Fn=[];
+    results.forEach((rows,i)=>{ const k=tasks[i][0]; if(k==='sales')S.push(...rows); else if(k==='items')I.push(...rows); else Fn.push(...rows); });
+    rawSales=S; rawItems=I; fin=Fn; stockRaw=stk||[];
+    lastUpdate=new Date();
+    document.getElementById('meta').textContent = 'Dados Saipos · atualizado '+lastUpdate.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · auto a cada '+REFRESH_MINUTES+' min';
     render();
-  } catch (e) {
-    if (seq !== loadSeq) return;
-    document.getElementById('content').innerHTML = `
-      <div class="card errbox">
-        <div class="t">Não foi possível carregar os dados</div>
-        <div class="m">${esc(e.message || e)}<br>Verifique se a function do Netlify está publicada e se a variável SAIPOS_TOKEN está configurada.</div>
-        <button onclick="load()">Tentar novamente</button>
-      </div>`;
+  } catch(e){
+    if (seq!==loadSeq) return;
+    document.getElementById('content').innerHTML = `<div class="card errbox">
+      <div style="font-size:18px;font-weight:700;color:#e08a7a;">Não foi possível carregar os dados</div>
+      <div style="font-size:13px;color:#8a93a8;line-height:1.5;">${esc(e.message||e)}<br>Verifique se a function do Netlify está publicada e se a variável SAIPOS_TOKEN está configurada.</div>
+      <button class="refresh" style="background:#5ec9c0;color:#0b1013;border:none;" onclick="load()">Tentar novamente</button></div>`;
   }
 }
 
-function render() {
-  const valid = rawSales.filter(s => s.canceled !== 'Y');
+function render(){
+  const valid = rawSales.filter(s=>s.canceled!=='Y');
   const canceledCount = rawSales.length - valid.length;
 
-  const prodsBySale = {};
-  for (const row of rawItems) {
-    const set = prodsBySale[row.id_sale] || (prodsBySale[row.id_sale] = new Set());
-    for (const it of (row.items || [])) if (it.deleted !== 'Y') set.add(it.desc_sale_item || '—');
-  }
+  const prodsBySale={};
+  for (const row of rawItems){ const set=prodsBySale[row.id_sale]||(prodsBySale[row.id_sale]=new Set()); for(const it of (row.items||[])) if(it.deleted!=='Y') set.add(it.desc_sale_item||'—'); }
+  const paySet=new Set(), chanSet=new Set(), prodTot={};
+  for (const s of valid){ chanSet.add(String(s.id_sale_type)); for(const p of (s.payments||[])) paySet.add(p.desc_store_payment_type||'Outros'); }
+  const validIdsAll=new Set(valid.map(s=>s.id_sale));
+  for (const row of rawItems){ if(!validIdsAll.has(row.id_sale))continue; for(const it of (row.items||[])) if(it.deleted!=='Y'){ const k=it.desc_sale_item||'—'; prodTot[k]=(prodTot[k]||0)+(it.quantity||0)*(it.unit_price||0); } }
 
-  const paySet = new Set(), chanSet = new Set(), prodTot = {};
-  for (const s of valid) {
-    chanSet.add(String(s.id_sale_type));
-    for (const p of (s.payments || [])) paySet.add(p.desc_store_payment_type || 'Outros');
-  }
-  const validIdsAll = new Set(valid.map(s => s.id_sale));
-  for (const row of rawItems) {
-    if (!validIdsAll.has(row.id_sale)) continue;
-    for (const it of (row.items || [])) if (it.deleted !== 'Y') {
-      const k = it.desc_sale_item || '—';
-      prodTot[k] = (prodTot[k] || 0) + (it.quantity || 0) * (it.unit_price || 0);
-    }
-  }
+  let sales=valid;
+  if (F.channel!=='all') sales=sales.filter(s=>String(s.id_sale_type)===F.channel);
+  if (F.payment!=='all') sales=sales.filter(s=>(s.payments||[]).some(p=>(p.desc_store_payment_type||'Outros')===F.payment));
+  if (F.product!=='all') sales=sales.filter(s=>(prodsBySale[s.id_sale]||new Set()).has(F.product));
+  const ids=new Set(sales.map(s=>s.id_sale));
+  const filtersActive = F.channel!=='all'||F.payment!=='all'||F.product!=='all';
 
-  let sales = valid;
-  if (F.channel !== 'all') sales = sales.filter(s => String(s.id_sale_type) === F.channel);
-  if (F.payment !== 'all') sales = sales.filter(s => (s.payments || []).some(p => (p.desc_store_payment_type || 'Outros') === F.payment));
-  if (F.product !== 'all') sales = sales.filter(s => (prodsBySale[s.id_sale] || new Set()).has(F.product));
-  const ids = new Set(sales.map(s => s.id_sale));
-  const filtersActive = F.channel !== 'all' || F.payment !== 'all' || F.product !== 'all';
+  const items=[];
+  for (const row of rawItems){ if(!ids.has(row.id_sale))continue; for(const it of (row.items||[])) if(it.deleted!=='Y') items.push(it); }
+  const revenue=sales.reduce((a,s)=>a+(s.total_amount||0),0);
+  const orders=sales.length;
+  const ticket=orders?revenue/orders:0;
+  const itemCount=items.reduce((a,i)=>a+(i.quantity||0),0);
 
-  const items = [];
-  for (const row of rawItems) {
-    if (!ids.has(row.id_sale)) continue;
-    for (const it of (row.items || [])) if (it.deleted !== 'Y') items.push(it);
+  const finFlat=[];
+  for (const tx of fin){
+    const kids=(tx.children&&tx.children.length)?tx.children:[{amount:tx.amount,desc_store_category_financial:tx.desc_store_category_financial,paid:tx.paid}];
+    for (const k of kids){ if((k.paid||tx.paid)!=='Y')continue; finFlat.push({cat:k.desc_store_category_financial||tx.desc_store_category_financial||'Sem categoria',amount:Math.abs(k.amount||0)}); }
   }
-  const revenue = sales.reduce((a, s) => a + (s.total_amount || 0), 0);
-  const orders = sales.length;
-  const ticket = orders ? revenue / orders : 0;
-  const itemCount = items.reduce((a, i) => a + (i.quantity || 0), 0);
+  const byCatExpense={}; let expenseTotal=0;
+  for (const f of finFlat){ if(ENTRADA_RE.test(f.cat))continue; byCatExpense[f.cat]=(byCatExpense[f.cat]||0)+f.amount; expenseTotal+=f.amount; }
+  const resultado = revenue - expenseTotal;
 
-  const byDay = {};
-  for (const s of sales) {
-    byDay[s.shift_date] = byDay[s.shift_date] || { rev: 0, n: 0 };
-    byDay[s.shift_date].rev += s.total_amount || 0; byDay[s.shift_date].n++;
-  }
+  const periodNote = mode==='day' ? new Date(dateSel+'T12:00:00').toLocaleDateString('pt-BR')
+    : monthsSel.slice().sort().map(mk=>{const [y,m]=mk.split('-'); return MN[+m-1]+'/'+y.slice(2);}).join(', ');
+
+  // day series
+  const byDay={};
+  for (const s of sales){ byDay[s.shift_date]=byDay[s.shift_date]||{rev:0,n:0}; byDay[s.shift_date].rev+=s.total_amount||0; byDay[s.shift_date].n++; }
   let selRanges;
-  if (mode === 'months' && monthsSel.length) {
-    selRanges = monthsSel.slice().sort().map((mk, i) => {
-      const r = monthRange(mk);
-      const [y, m] = mk.split('-').map(Number);
-      return { ...r, label: MN[m - 1] + '/' + String(y).slice(2), color: PALETTE[i % PALETTE.length] };
-    });
-  } else {
-    selRanges = [{ ...range(), label: '', color: '#E8B36A' }];
-  }
-  const rngStart = selRanges[0].start, rngEnd = selRanges[selRanges.length - 1].end;
-  const perRange = selRanges.map(r => {
-    const span = Math.round((new Date(r.end.getFullYear(), r.end.getMonth(), r.end.getDate()) - new Date(r.start.getFullYear(), r.start.getMonth(), r.start.getDate())) / 864e5) + 1;
-    const arr = [];
-    for (let i = 0; i < span; i++) {
-      const d = new Date(r.start.getFullYear(), r.start.getMonth(), r.start.getDate() + i);
-      const v = byDay[fmtDate(d)] || { rev: 0, n: 0 };
-      arr.push({ d, rev: v.rev, n: v.n, ticket: v.n ? v.rev / v.n : 0 });
-    }
-    return { ...r, days: arr };
+  if (mode==='months'&&monthsSel.length){
+    selRanges=monthsSel.slice().sort().map((mk,i)=>{ const r=monthRange(mk); const [y,m]=mk.split('-').map(Number); return {...r,label:MN[m-1]+'/'+String(y).slice(2),color:PALETTE[i%PALETTE.length]}; });
+  } else { selRanges=[{...loadRanges()[0],label:'',color:'#5ec9c0'}]; }
+  const perRange=selRanges.map(r=>{
+    const span=Math.round((new Date(r.end.getFullYear(),r.end.getMonth(),r.end.getDate())-new Date(r.start.getFullYear(),r.start.getMonth(),r.start.getDate()))/864e5)+1;
+    const arr=[];
+    for(let i=0;i<span;i++){ const d=new Date(r.start.getFullYear(),r.start.getMonth(),r.start.getDate()+i); const v=byDay[fmtDate(d)]||{rev:0,n:0}; arr.push({d,rev:v.rev,n:v.n,ticket:v.n?v.rev/v.n:0}); }
+    return {...r,days:arr};
   });
-  const daily = perRange.flatMap(r => r.days);
-  const spanDays = daily.length;
-  const isCompare = selRanges.length > 1;
+  const daily=perRange.flatMap(r=>r.days);
+  const isCompare=selRanges.length>1;
 
-  // evolution chart
-  const metricDefs = { rev: ['Faturamento', x => x.rev, brl0], n: ['Pedidos', x => x.n, v => Math.round(v).toLocaleString('pt-BR')], ticket: ['Ticket médio', x => x.ticket, brl0] };
-  const [mLabel, mGet, mFmt] = metricDefs[F.metric];
-  let evoSvg, evoCols, xlabs, evoLbls, maxV;
-  if (isCompare) {
-    const W = 800, H = 200;
-    const n = Math.max(...perRange.map(r => r.days.length));
-    const allSeries = perRange.map(r => r.days.map(mGet));
-    maxV = Math.max(1, ...allSeries.flat());
-    const px = i => n > 1 ? i / (n - 1) * W : W / 2;
-    const py = v => H - (v / maxV) * (H - 10);
-    const paths = allSeries.map((ser, ri) => `<path d="M${ser.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' L')}" fill="none" stroke="${perRange[ri].color}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>`).join('');
-    evoSvg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" y1="${py(maxV / 2)}" x2="${W}" y2="${py(maxV / 2)}" stroke="#372C20" stroke-width="1" stroke-dasharray="4 4"/>${paths}</svg>`;
-    evoCols = Array.from({ length: n }, (_, i) => `<div title="${esc('Dia ' + (i + 1) + ' — ' + perRange.map((r, ri) => r.days[i] ? r.label + ': ' + mFmt(allSeries[ri][i]) : null).filter(Boolean).join(' · '))}"></div>`).join('');
-    const step = Math.max(1, Math.ceil(n / 10));
-    xlabs = Array.from({ length: n }, (_, i) => `<div>${(i % step === 0 || i === n - 1) ? (i + 1) : ''}</div>`).join('');
-    evoLbls = '';
+  const metricDefs={ rev:['Faturamento',x=>x.rev,brl0], n:['Pedidos',x=>x.n,v=>Math.round(v).toLocaleString('pt-BR')], ticket:['Ticket',x=>x.ticket,brl0] };
+  const [mLabel,mGet,mFmt]=metricDefs[F.metric];
+  const metricTabsHtml = Object.entries(metricDefs).map(([k,[l]])=>`<button class="${F.metric===k?'on':''}" onclick="setF('metric','${k}')">${l}</button>`).join('');
+
+  const W=800,H=200;
+  let evoSvg,evoCols,xlabs,evoLbls,maxV,legendHtml='';
+  if (isCompare){
+    const n=Math.max(...perRange.map(r=>r.days.length));
+    const allSeries=perRange.map(r=>r.days.map(mGet));
+    maxV=Math.max(1,...allSeries.flat());
+    const px=i=>n>1?i/(n-1)*W:W/2, py=v=>H-(v/maxV)*(H-10);
+    const paths=allSeries.map((ser,ri)=>`<path d="M${ser.map((v,i)=>`${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' L')}" fill="none" stroke="${perRange[ri].color}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>`).join('');
+    evoSvg=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible;"><line x1="0" y1="${py(maxV/2)}" x2="${W}" y2="${py(maxV/2)}" stroke="#262c3a" stroke-width="1" stroke-dasharray="4 4"/>${paths}</svg>`;
+    evoCols=Array.from({length:n},(_,i)=>`<div title="${esc('Dia '+(i+1)+' — '+perRange.map((r,ri)=>r.days[i]?r.label+': '+mFmt(allSeries[ri][i]):null).filter(Boolean).join(' · '))}" style="flex:1;height:100%;"></div>`).join('');
+    const step=Math.max(1,Math.ceil(n/10));
+    xlabs=Array.from({length:n},(_,i)=>`<div style="flex:1;font-size:10px;color:#8a93a8;text-align:center;">${(i%step===0||i===n-1)?(i+1):''}</div>`).join('');
+    evoLbls='';
+    legendHtml=perRange.map(r=>`<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#8a93a8;"><span style="width:10px;height:10px;border-radius:3px;background:${r.color};display:inline-block;"></span>${r.label}</div>`).join('');
   } else {
-  let evoPts;
-  if (spanDays === 1) {
-    const byH = {};
-    for (const s of sales) {
-      const k = shiftHour(s);
-      if (k !== null) { byH[k] = byH[k] || { rev: 0, n: 0 }; byH[k].rev += s.total_amount || 0; byH[k].n++; }
+    let evoPts;
+    if (daily.length===1){
+      const byH={};
+      for (const s of sales){ const k=shiftHour(s); if(k!==null){ byH[k]=byH[k]||{rev:0,n:0}; byH[k].rev+=s.total_amount||0; byH[k].n++; } }
+      const ks=Object.keys(byH).map(Number), lo=ks.length?Math.min(...ks):8, hi=ks.length?Math.max(...ks):18;
+      evoPts=[];
+      for(let k=lo;k<=hi;k++){ const v=byH[k]||{rev:0,n:0}; evoPts.push({xLabel:(k%24)+'h',tipDate:(k%24)+'h',rev:v.rev,n:v.n,ticket:v.n?v.rev/v.n:0}); }
+    } else {
+      evoPts=daily.map(x=>({xLabel:daily.length>15?x.d.getDate()+'/'+(x.d.getMonth()+1):WD[x.d.getDay()]+' '+x.d.getDate(),tipDate:x.d.toLocaleDateString('pt-BR'),rev:x.rev,n:x.n,ticket:x.ticket}));
     }
-    const ks = Object.keys(byH).map(Number);
-    const lo = ks.length ? Math.min(...ks) : 8, hi = ks.length ? Math.max(...ks) : 18;
-    evoPts = [];
-    for (let k = lo; k <= hi; k++) {
-      const v = byH[k] || { rev: 0, n: 0 };
-      evoPts.push({ xLabel: (k % 24) + 'h', tipDate: (k % 24) + 'h–' + ((k + 1) % 24) + 'h' + (k >= 24 ? ' (madrugada)' : ''), rev: v.rev, n: v.n, ticket: v.n ? v.rev / v.n : 0 });
-    }
-  } else {
-    evoPts = daily.map(x => ({
-      xLabel: spanDays > 15 ? x.d.getDate() + '/' + (x.d.getMonth() + 1) : WD[x.d.getDay()] + ' ' + x.d.getDate(),
-      tipDate: x.d.toLocaleDateString('pt-BR'), rev: x.rev, n: x.n, ticket: x.ticket,
-    }));
-  }
-  const series = evoPts.map(mGet);
-  maxV = Math.max(1, ...series);
-  const W = 800, H = 200, n = series.length;
-  const px = i => n > 1 ? i / (n - 1) * W : W / 2;
-  const py = v => H - (v / maxV) * (H - 10);
-  const linePts = series.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' L');
-  const lineD = 'M' + linePts;
-  const areaD = lineD + ` L${W},${H} L0,${H} Z`;
-  const dots = evoPts.map((x, i) => (x.n || F.metric !== 'rev') ? `<circle cx="${px(i).toFixed(1)}" cy="${py(series[i]).toFixed(1)}" r="3" fill="#E8B36A"/>` : '').join('');
-  evoSvg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-    <defs><linearGradient id="gEvo" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#D9A05B" stop-opacity="0.35"/><stop offset="100%" stop-color="#D9A05B" stop-opacity="0.02"/>
-    </linearGradient></defs>
-    <line x1="0" y1="${py(maxV / 2)}" x2="${W}" y2="${py(maxV / 2)}" stroke="#372C20" stroke-width="1" stroke-dasharray="4 4"/>
-    <path d="${areaD}" fill="url(#gEvo)"/>
-    <path d="${lineD}" fill="none" stroke="#E8B36A" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>${dots}</svg>`;
-  evoCols = evoPts.map((x, i) =>
-    `<div title="${esc(x.tipDate + ' · ' + mLabel + ': ' + mFmt(series[i]) + ' · ' + x.n + ' pedidos · ' + brl(x.rev))}"></div>`).join('');
-  const step = Math.max(1, Math.ceil(n / 10));
-  xlabs = evoPts.map((x, i) =>
-    `<div>${(i % step === 0 || i === n - 1) ? x.xLabel : ''}</div>`).join('');
-  evoLbls = evoPts.map((x, i) => ((i % step === 0 || i === n - 1) && series[i] > 0)
-    ? `<div class="ptlbl" style="left:${(n > 1 ? i / (n - 1) * 100 : 50).toFixed(2)}%;top:${(py(series[i]) / H * 100).toFixed(2)}%">${mFmt(series[i])}</div>` : '').join('');
-  }
-  const legendHtml = isCompare ? perRange.map(r => `<div style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#A6937D;"><span style="width:10px;height:10px;border-radius:3px;background:${r.color};display:inline-block;"></span>${r.label}</div>`).join('') : '';
-  let compareHtml = '';
-  if (isCompare) {
-    const totals = perRange.map(r => ({ rev: r.days.reduce((a, x) => a + x.rev, 0), n: r.days.reduce((a, x) => a + x.n, 0) }));
-    const maxRevM = Math.max(1, ...totals.map(t => t.rev));
-    compareHtml = `<div class="card"><div class="sect-title" style="margin-bottom:14px">Comparação de meses</div><div class="rows">` + perRange.map((r, i) => {
-      const t = totals[i], prev = i ? totals[i - 1].rev : null, delta = prev ? (t.rev - prev) / prev : null;
-      return `<div style="display:grid;grid-template-columns:76px minmax(0,1fr) 130px 90px 110px;gap:12px;align-items:center;">
-        <div style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;"><span style="width:10px;height:10px;border-radius:3px;background:${r.color};flex-shrink:0;"></span>${r.label}</div>
-        <div class="track" style="height:10px"><div style="background:${r.color};width:${Math.round(t.rev / maxRevM * 100)}%"></div></div>
-        <div style="text-align:right"><div style="font-size:13.5px;font-weight:700">${brl0(t.rev)}</div><div style="font-size:11px;white-space:nowrap;color:${delta === null ? '#A6937D' : delta >= 0 ? '#9DBA7F' : '#E08A66'}">${delta === null ? '' : (delta >= 0 ? '+' : '') + (delta * 100).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '% vs ' + perRange[i - 1].label}</div></div>
-        <div style="font-size:12.5px;color:#A6937D;text-align:right">${t.n.toLocaleString('pt-BR')} pedidos</div>
-        <div style="font-size:12.5px;color:#A6937D;text-align:right">ticket ${brl(t.n ? t.rev / t.n : 0)}</div>
-      </div>`;
-    }).join('') + `</div></div>`;
-  }
-  const metricTabsHtml = Object.entries(metricDefs).map(([k, [label]]) =>
-    `<button class="${F.metric === k ? 'on' : ''}" onclick="setF('metric','${k}')">${label}</button>`).join('');
-
-  // hourly
-  const byHour = {};
-  for (const s of sales) { const k = shiftHour(s); if (k !== null) byHour[k] = (byHour[k] || 0) + 1; }
-  const hks = Object.keys(byHour).map(Number);
-  const hMin = hks.length ? Math.min(...hks) : 8, hMax = hks.length ? Math.max(...hks) : 18;
-  const maxH = Math.max(1, ...Object.values(byHour));
-  let hourlyHtml = '';
-  for (let k = hMin; k <= hMax; k++) {
-    hourlyHtml += `<div class="col" title="${(byHour[k] || 0)} pedidos entre ${k % 24}h e ${(k + 1) % 24}h${k >= 24 ? ' (madrugada — turno do dia anterior)' : ''}">
-      <div class="val">${byHour[k] || ''}</div>
-      <div class="bar" style="height:${Math.round((byHour[k] || 0) / maxH * 100)}%"></div><div class="lbl">${k % 24}h</div></div>`;
+    const series=evoPts.map(mGet);
+    maxV=Math.max(1,...series);
+    const n=series.length, px=i=>n>1?i/(n-1)*W:W/2, py=v=>H-(v/maxV)*(H-10);
+    const lineD='M'+series.map((v,i)=>`${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' L');
+    const dots=evoPts.map((x,i)=>(x.n||F.metric!=='rev')?`<circle cx="${px(i).toFixed(1)}" cy="${py(series[i]).toFixed(1)}" r="3" fill="#8adfd8"/>`:'').join('');
+    evoSvg=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible;"><defs><linearGradient id="gEvo" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5ec9c0" stop-opacity="0.32"/><stop offset="100%" stop-color="#5ec9c0" stop-opacity="0.02"/></linearGradient></defs><line x1="0" y1="${py(maxV/2)}" x2="${W}" y2="${py(maxV/2)}" stroke="#262c3a" stroke-width="1" stroke-dasharray="4 4"/><path d="${lineD} L${W},${H} L0,${H} Z" fill="url(#gEvo)"/><path d="${lineD}" fill="none" stroke="#5ec9c0" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>${dots}</svg>`;
+    evoCols=evoPts.map((x,i)=>`<div title="${esc(x.tipDate+' · '+mLabel+': '+mFmt(series[i])+' · '+x.n+' pedidos · '+brl(x.rev))}" style="flex:1;height:100%;"></div>`).join('');
+    const step=Math.max(1,Math.ceil(n/10));
+    xlabs=evoPts.map((x,i)=>`<div style="flex:1;font-size:10px;color:#8a93a8;text-align:center;white-space:nowrap;">${(i%step===0||i===n-1)?x.xLabel:''}</div>`).join('');
+    evoLbls=evoPts.map((x,i)=>((i%step===0||i===n-1)&&series[i]>0)?`<div class="mono" style="position:absolute;left:${(n>1?i/(n-1)*100:50).toFixed(2)}%;top:${(py(series[i])/H*100).toFixed(2)}%;transform:translate(-50%,-130%);font-size:10px;font-weight:600;color:#8adfd8;white-space:nowrap;pointer-events:none;">${mFmt(series[i])}</div>`:'').join('');
   }
 
-  // weekday averages
-  const wdAgg = Array.from({ length: 7 }, () => ({ rev: 0, ds: new Set() }));
-  for (const x of daily) if (x.n) { wdAgg[x.d.getDay()].rev += x.rev; wdAgg[x.d.getDay()].ds.add(fmtDate(x.d)); }
-  const wdAvg = wdAgg.map(a => a.ds.size ? a.rev / a.ds.size : 0);
-  const maxWd = Math.max(1, ...wdAvg);
-  const weekdayHtml = [1, 2, 3, 4, 5, 6, 0].map(i => `
-    <div class="col" title="média de ${esc(brl(wdAvg[i]))} em ${wdAgg[i].ds.size} ${WD[i]}">
-      <div class="val">${wdAvg[i] ? brl0(wdAvg[i]).replace(/\u00a0/g, '') : '—'}</div>
-      <div class="bar" style="background:${(i === 0 || i === 6) ? '#D9A05B' : '#8C6A45'};height:${Math.round(wdAvg[i] / maxWd * 100)}%"></div>
-      <div class="lbl">${WD[i]}</div></div>`).join('');
-
-  // payments
-  const byPay = {};
-  for (const s of sales) for (const p of (s.payments || [])) {
-    const k = p.desc_store_payment_type || 'Outros';
-    byPay[k] = (byPay[k] || 0) + (p.payment_amount || 0);
+  // month compare card
+  let compareHtml='';
+  if (isCompare){
+    const totals=perRange.map(r=>({rev:r.days.reduce((a,x)=>a+x.rev,0),n:r.days.reduce((a,x)=>a+x.n,0)}));
+    const maxRevM=Math.max(1,...totals.map(t=>t.rev));
+    compareHtml=`<div class="card"><div class="st" style="margin-bottom:14px;">Comparação de meses</div><div style="display:flex;flex-direction:column;gap:12px;">`+
+      perRange.map((r,i)=>{ const t=totals[i], prev=i?totals[i-1].rev:null, delta=prev?(t.rev-prev)/prev:null;
+        return `<div style="display:grid;grid-template-columns:84px minmax(0,1fr) 140px 96px 120px;gap:12px;align-items:center;">
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;"><span style="width:10px;height:10px;border-radius:3px;background:${r.color};flex-shrink:0;"></span>${r.label}</div>
+          <div class="track" style="height:10px;"><div style="background:${r.color};width:${Math.round(t.rev/maxRevM*100)}%;"></div></div>
+          <div style="text-align:right;"><div class="mono" style="font-size:13.5px;font-weight:600;">${brl0(t.rev)}</div><div style="font-size:11px;white-space:nowrap;color:${delta===null?'#8a93a8':delta>=0?'#57c98a':'#e08a7a'};">${delta===null?'':(delta>=0?'+':'')+(delta*100).toLocaleString('pt-BR',{maximumFractionDigits:0})+'% vs '+perRange[i-1].label}</div></div>
+          <div class="mono" style="font-size:12px;color:#8a93a8;text-align:right;">${t.n.toLocaleString('pt-BR')} ped.</div>
+          <div class="mono" style="font-size:12px;color:#8a93a8;text-align:right;">ticket ${brl(t.n?t.rev/t.n:0)}</div></div>`;
+      }).join('')+`</div></div>`;
   }
-  const payTotal = Object.values(byPay).reduce((a, b) => a + b, 0) || 1;
-  const payHtml = Object.entries(byPay).sort((a, b) => b[1] - a[1]).map(([name, amt]) => `
-    <div class="row"><div class="top"><b>${esc(name)}</b><span>${brl0(amt)} · ${pct(amt / payTotal)}</span></div>
-    <div class="track"><div style="background:#D9A05B;width:${Math.round(amt / payTotal * 100)}%"></div></div></div>`).join('');
 
-  // channels
-  const byType = {};
-  for (const s of sales) byType[s.id_sale_type] = (byType[s.id_sale_type] || 0) + 1;
-  const typeHtml = Object.entries(byType).sort((a, b) => b[1] - a[1]).map(([t, cnt]) => `
-    <div class="row"><div class="top"><b>${TYPE_NAMES[t] || 'Tipo ' + t}</b><span>${cnt} pedidos · ${pct(cnt / (orders || 1))}</span></div>
-    <div class="track"><div style="background:#8C6A45;width:${Math.round(cnt / (orders || 1) * 100)}%"></div></div></div>`).join('');
-
-  // top products
-  const byProd = {};
-  for (const it of items) {
-    const k = it.desc_sale_item || '—';
-    byProd[k] = byProd[k] || { qty: 0, rev: 0 };
-    byProd[k].qty += it.quantity || 0;
-    byProd[k].rev += (it.quantity || 0) * (it.unit_price || 0);
-  }
-  const q = norm(F.prodSearch.trim());
-  let prodList = Object.entries(byProd).filter(([name]) => !q || norm(name).includes(q));
-  prodList.sort((a, b) => F.prodMetric === 'qty' ? b[1].qty - a[1].qty : b[1].rev - a[1].rev);
-  prodList = prodList.slice(0, 10);
-  const maxProd = prodList.length ? (F.prodMetric === 'qty' ? prodList[0][1].qty : prodList[0][1].rev) : 1;
-  const prodHtml = prodList.length ? prodList.map(([name, v], i) => `
-    <div class="prod"><div class="rank">${i + 1}</div>
-      <div style="min-width:0" title="${esc(name)}"><div class="name">${esc(name)}</div>
-      <div class="track"><div style="background:#D9A05B;width:${Math.max(2, Math.round((F.prodMetric === 'qty' ? v.qty : v.rev) / maxProd * 100))}%"></div></div></div>
-      <div class="unit">${v.qty.toLocaleString('pt-BR')} un · ${v.qty ? brl(v.rev / v.qty) + '/un' : '—'}</div><div class="rev">${brl(v.rev)}</div></div>`).join('')
-    : `<div style="font-size:13px;color:#A6937D;padding:12px 0;">Nenhum produto encontrado para "${esc(F.prodSearch)}".</div>`;
-  const prodTabsHtml = [['rev', 'receita'], ['qty', 'quantidade']].map(([k, label]) =>
-    `<button class="${F.prodMetric === k ? 'on' : ''}" onclick="setF('prodMetric','${k}')">${label}</button>`).join('');
-
-  // filter selects
-  const opt = (v, label, cur) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label)}</option>`;
-  const chanSel = `<select onchange="setF('channel',this.value)">${opt('all', 'Todos os canais', F.channel)}${[...chanSet].sort().map(t => opt(t, TYPE_NAMES[t] || 'Tipo ' + t, F.channel)).join('')}</select>`;
-  const paySel = `<select onchange="setF('payment',this.value)">${opt('all', 'Todos os pagamentos', F.payment)}${[...paySet].sort().map(p => opt(p, p, F.payment)).join('')}</select>`;
-  const prodSel = `<select onchange="setF('product',this.value)">${opt('all', 'Todos os produtos', F.product)}${Object.entries(prodTot).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([p]) => opt(p, p, F.product)).join('')}</select>`;
-  const noteParts = [];
-  if (F.channel !== 'all') noteParts.push(TYPE_NAMES[F.channel] || F.channel);
-  if (F.payment !== 'all') noteParts.push(F.payment);
-  if (F.product !== 'all') noteParts.push('vendas com "' + F.product + '"');
-  const clearHtml = filtersActive
-    ? `<button class="clearbtn" onclick="clearFilters()">limpar filtros</button><span style="font-size:12px;color:#A6937D;">mostrando: ${esc(noteParts.join(' · '))}</span>` : '';
-
-  const kpis = [
-    { l: 'Faturamento', v: brl(revenue), s: filtersActive ? 'com filtros aplicados' : (mode === 'day' ? rngStart.toLocaleDateString('pt-BR') : mode === 'months' ? selRanges.map(r => r.label).join(', ') : mode === 'range' ? rngStart.toLocaleDateString('pt-BR') + ' – ' + rngEnd.toLocaleDateString('pt-BR') : 'últimos ' + days + ' dias') },
-    { l: 'Pedidos', v: orders.toLocaleString('pt-BR'), s: filtersActive ? 'de ' + valid.length + ' no período' : (canceledCount ? canceledCount + ' cancelados' : 'nenhum cancelado') },
-    { l: 'Ticket médio', v: brl(ticket), s: 'por pedido' },
-    { l: 'Itens vendidos', v: itemCount.toLocaleString('pt-BR'), s: (orders ? (itemCount / orders).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) : '0') + ' itens/pedido' },
+  // KPIs
+  const kpis=[
+    {l:'Faturamento',v:brl(revenue),c:'#e6e9f0',s:filtersActive?'com filtros':periodNote},
+    {l:'Pedidos',v:orders.toLocaleString('pt-BR'),c:'#e6e9f0',s:canceledCount?canceledCount+' cancelados':'nenhum cancelado'},
+    {l:'Ticket médio',v:brl(ticket),c:'#e6e9f0',s:'por pedido'},
+    {l:'Itens vendidos',v:itemCount.toLocaleString('pt-BR'),c:'#e6e9f0',s:(orders?(itemCount/orders).toLocaleString('pt-BR',{maximumFractionDigits:1}):'0')+' /pedido'},
+    {l:'Despesas pagas',v:brl(expenseTotal),c:'#e08a7a',s:finFlat.length?'regime caixa':'sem lançamentos'},
+    {l:'Resultado',v:brl(resultado),c:resultado>=0?'#57c98a':'#e08a7a',s:revenue?pct(resultado/revenue)+' da receita':'—'},
   ];
 
+  // filter selects
+  const opt=(v,l,cur)=>`<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(l)}</option>`;
+  const chanSel=`<select onchange="setF('channel',this.value)">${opt('all','Todos os canais',F.channel)}${[...chanSet].sort().map(t=>opt(t,TYPE_NAMES[t]||'Tipo '+t,F.channel)).join('')}</select>`;
+  const paySel=`<select onchange="setF('payment',this.value)">${opt('all','Todos os pagamentos',F.payment)}${[...paySet].sort().map(p=>opt(p,p,F.payment)).join('')}</select>`;
+  const prodSel=`<select onchange="setF('product',this.value)">${opt('all','Todos os produtos',F.product)}${Object.entries(prodTot).sort((a,b)=>b[1]-a[1]).slice(0,40).map(([p])=>opt(p,p,F.product)).join('')}</select>`;
+
+  // DRE
+  const catList=Object.entries(byCatExpense).sort((a,b)=>b[1]-a[1]);
+  let dreHtml=`<div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 64px;gap:10px;padding:8px 20px;align-items:center;border-top:1px solid #262c3a;background:#141821;">
+    <div style="font-size:13.5px;font-weight:700;">Receita bruta de vendas</div>
+    <div class="mono" style="text-align:right;font-size:12.5px;font-weight:700;color:#8adfd8;">${brl(revenue)}</div>
+    <div class="mono" style="text-align:right;font-size:11px;color:#8a93a8;">100%</div></div>`;
+  dreHtml+=`<div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 64px;gap:10px;padding:8px 20px;align-items:center;border-top:1px solid #1a1f2b;">
+    <div style="display:flex;align-items:center;gap:7px;"><button onclick="toggleDre()" style="width:16px;height:16px;border:none;background:transparent;color:#8a93a8;cursor:pointer;font-size:10px;padding:0;visibility:${catList.length?'visible':'hidden'};">${F.dreExpanded?'▾':'▸'}</button><span style="font-size:13px;font-weight:700;color:#e08a7a;">(−) Despesas operacionais</span></div>
+    <div class="mono" style="text-align:right;font-size:12.5px;font-weight:700;color:#e08a7a;">−${brl(expenseTotal)}</div>
+    <div class="mono" style="text-align:right;font-size:11px;color:#8a93a8;">${revenue?pct(expenseTotal/revenue):'—'}</div></div>`;
+  if (F.dreExpanded) for (const [cat,amt] of catList) dreHtml+=`<div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 64px;gap:10px;padding:8px 20px;align-items:center;border-top:1px solid #141821;">
+    <div style="padding-left:23px;font-size:12px;color:#8a93a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(cat)}</div>
+    <div class="mono" style="text-align:right;font-size:12.5px;color:#c6ccd9;">${brl(amt)}</div>
+    <div class="mono" style="text-align:right;font-size:11px;color:#8a93a8;">${expenseTotal?pct(amt/expenseTotal):'—'}</div></div>`;
+  dreHtml+=`<div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 64px;gap:10px;padding:8px 20px;align-items:center;border-top:1px solid #262c3a;background:#141821;">
+    <div style="font-size:13.5px;font-weight:700;">= Resultado (caixa)</div>
+    <div class="mono" style="text-align:right;font-size:12.5px;font-weight:700;color:${resultado>=0?'#57c98a':'#e08a7a'};">${brl(resultado)}</div>
+    <div class="mono" style="text-align:right;font-size:11px;color:#8a93a8;">${revenue?pct(resultado/revenue):'—'}</div></div>`;
+
+  const maxCat=catList.length?catList[0][1]:1;
+  const costHtml = catList.length ? catList.slice(0,8).map(([cat,amt])=>`
+    <div style="display:grid;grid-template-columns:150px 1fr 90px 46px;gap:10px;align-items:center;">
+      <div style="font-size:12px;color:#c6ccd9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(cat)}">${esc(cat)}</div>
+      <div class="track" style="height:12px;"><div style="background:#c96b5c;width:${Math.max(2,Math.round(amt/maxCat*100))}%;"></div></div>
+      <div class="mono" style="font-size:11.5px;text-align:right;">${brl0(amt)}</div>
+      <div class="mono" style="font-size:11px;text-align:right;color:#d9ad63;">${pct(amt/(expenseTotal||1))}</div></div>`).join('')
+    : `<div style="font-size:12.5px;color:#6b7488;padding:16px 0;">Nenhum lançamento financeiro pago encontrado no período.</div>`;
+
+  // hourly
+  const byHour={};
+  for (const s of sales){ const k=shiftHour(s); if(k!==null) byHour[k]=(byHour[k]||0)+1; }
+  const hks=Object.keys(byHour).map(Number), hMin=hks.length?Math.min(...hks):8, hMax=hks.length?Math.max(...hks):18, maxH=Math.max(1,...Object.values(byHour));
+  let hourlyHtml='';
+  for (let k=hMin;k<=hMax;k++) hourlyHtml+=`<div title="${(byHour[k]||0)} pedidos ${k%24}h–${(k+1)%24}h${k>=24?' (madrugada)':''}" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;">
+    <div class="mono" style="font-size:9.5px;color:#8a93a8;">${byHour[k]||''}</div>
+    <div style="width:100%;max-width:24px;border-radius:4px 4px 2px 2px;background:#5ec9c0;height:${Math.round((byHour[k]||0)/maxH*100)}%;min-height:2px;"></div>
+    <div style="font-size:10px;color:#8a93a8;">${k%24}h</div></div>`;
+
+  // weekday
+  const wdAgg=Array.from({length:7},()=>({rev:0,ds:new Set()}));
+  for (const x of daily) if(x.n){ wdAgg[x.d.getDay()].rev+=x.rev; wdAgg[x.d.getDay()].ds.add(fmtDate(x.d)); }
+  const wdAvg=wdAgg.map(a=>a.ds.size?a.rev/a.ds.size:0), maxWd=Math.max(1,...wdAvg);
+  const weekdayHtml=[1,2,3,4,5,6,0].map(i=>`<div title="média ${esc(brl(wdAvg[i]))} em ${wdAgg[i].ds.size} ${WD[i]}" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;">
+    <div class="mono" style="font-size:9.5px;color:#8a93a8;white-space:nowrap;">${wdAvg[i]?brl0(wdAvg[i]).replace(/\u00a0/g,''):'—'}</div>
+    <div style="width:100%;max-width:32px;border-radius:4px 4px 2px 2px;background:${(i===0||i===6)?'#d9ad63':'#5ec9c0'};height:${Math.round(wdAvg[i]/maxWd*100)}%;min-height:2px;"></div>
+    <div style="font-size:10.5px;color:#8a93a8;">${WD[i]}</div></div>`).join('');
+
+  // payments
+  const byPay={};
+  for (const s of sales) for(const p of (s.payments||[])){ const k=p.desc_store_payment_type||'Outros'; byPay[k]=(byPay[k]||0)+(p.payment_amount||0); }
+  const payTotal=Object.values(byPay).reduce((a,b)=>a+b,0)||1;
+  const payHtml=Object.entries(byPay).sort((a,b)=>b[1]-a[1]).map(([l,amt])=>`<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;"><b style="font-weight:600;">${esc(l)}</b><span style="color:#8a93a8;">${brl0(amt)} · ${pct(amt/payTotal)}</span></div><div class="track"><div style="background:#5ec9c0;width:${Math.round(amt/payTotal*100)}%;"></div></div></div>`).join('');
+
+  // channels
+  const byType={};
+  for (const s of sales) byType[s.id_sale_type]=(byType[s.id_sale_type]||0)+1;
+  const chanHtml=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,cnt])=>`<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;"><b style="font-weight:600;">${esc(TYPE_NAMES[t]||'Tipo '+t)}</b><span style="color:#8a93a8;">${cnt} · ${pct(cnt/(orders||1))}</span></div><div class="track"><div style="background:#8adfd8;width:${Math.round(cnt/(orders||1)*100)}%;"></div></div></div>`).join('');
+
+  // products
+  const byProd={};
+  for (const it of items){ const k=it.desc_sale_item||'—'; byProd[k]=byProd[k]||{qty:0,rev:0}; byProd[k].qty+=it.quantity||0; byProd[k].rev+=(it.quantity||0)*(it.unit_price||0); }
+  const q=norm(F.prodSearch.trim());
+  let prodList=Object.entries(byProd).filter(([n])=>!q||norm(n).includes(q));
+  prodList.sort((a,b)=>F.prodMetric==='qty'?b[1].qty-a[1].qty:b[1].rev-a[1].rev);
+  prodList=prodList.slice(0,10);
+  const maxProd=prodList.length?(F.prodMetric==='qty'?prodList[0][1].qty:prodList[0][1].rev):1;
+  const prodHtml=prodList.length?prodList.map(([name,v],i)=>`<div style="display:grid;grid-template-columns:24px minmax(0,1fr) auto 90px;gap:10px;align-items:center;">
+    <div class="mono" style="font-size:12px;font-weight:700;color:#5ec9c0;">${i+1}</div>
+    <div style="min-width:0;" title="${esc(name)}"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(name)}</div><div class="track" style="height:6px;margin-top:5px;"><div style="background:#5ec9c0;width:${Math.max(2,Math.round((F.prodMetric==='qty'?v.qty:v.rev)/maxProd*100))}%;"></div></div></div>
+    <div class="mono" style="font-size:11.5px;color:#8a93a8;text-align:right;white-space:nowrap;">${v.qty.toLocaleString('pt-BR')} un · ${v.qty?brl(v.rev/v.qty):'—'}</div>
+    <div class="mono" style="font-size:13px;font-weight:700;text-align:right;">${brl(v.rev)}</div></div>`).join('')
+    : `<div style="font-size:12.5px;color:#6b7488;padding:12px 0;">Nenhum produto encontrado para "${esc(F.prodSearch)}".</div>`;
+  const prodTabsHtml=[['rev','receita'],['qty','qtd']].map(([k,l])=>`<button class="${F.prodMetric===k?'on':''}" onclick="setF('prodMetric','${k}')">${l}</button>`).join('');
+
+  // stock
+  const stockAgg={};
+  for (const r of stockRaw){ const name=r.desc_store_ingredient||r.desc_ingredient; if(!name)continue; const s=stockAgg[name]||(stockAgg[name]={qty:0,cost:r.average_cost||r.unit_cost||0}); s.qty=r.current_inventory!=null?r.current_inventory:s.qty; }
+  const stockList=Object.entries(stockAgg).slice(0,20);
+  const stockInner = stockList.length ? `<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">`+stockList.map(([name,s])=>`<div style="display:grid;grid-template-columns:minmax(0,1fr) 100px 120px;gap:12px;align-items:center;padding:6px 0;border-top:1px solid #1a1f2b;">
+      <div style="font-size:13px;color:#c6ccd9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(name)}</div>
+      <div class="mono" style="font-size:12px;text-align:right;color:#8a93a8;">${(s.qty||0).toLocaleString('pt-BR')}</div>
+      <div class="mono" style="font-size:12.5px;text-align:right;">${brl(s.qty*s.cost)}</div></div>`).join('')+`</div>`
+    : `<div style="margin-top:14px;background:#141821;border:1px dashed #2a3140;border-radius:10px;padding:22px;text-align:center;color:#6b7488;font-size:13px;line-height:1.5;">O endpoint de movimentação/posição de estoque da API de Dados da Saipos está <b style="color:#d9ad63;">em manutenção</b> e não retorna dados no momento.<br>Assim que a Saipos reativar o serviço, esta seção passa a preencher automaticamente.</div>`;
+
   document.getElementById('content').innerHTML = `
-    <div class="stack">
-      <div class="card filters">
-        <span class="fl">Filtros</span>${chanSel}${paySel}${prodSel}${clearHtml}
+    <div style="display:flex;flex-direction:column;gap:22px;">
+      <div class="kpis">${kpis.map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v" style="color:${k.c};">${k.v}</div><div class="s">${k.s}</div></div>`).join('')}</div>
+
+      <div class="card" style="padding:12px 16px;">
+        <div style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#8a93a8;margin-bottom:10px;">Filtros</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">${chanSel}${paySel}${prodSel}${filtersActive?`<button onclick="clearFilters()" style="border:none;cursor:pointer;background:transparent;color:#5ec9c0;font-family:'Archivo',sans-serif;font-size:12.5px;font-weight:600;text-decoration:underline;padding:6px;">limpar</button>`:''}</div>
       </div>
-      <div class="grid-kpi">${kpis.map(k => `<div class="card kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="s">${k.s}</div></div>`).join('')}</div>
-      ${compareHtml}
+
       <div class="card">
-        <div class="sect-head"><div class="sect-title">${isCompare ? 'Evolução por dia do mês' : 'Evolução diária'}</div><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">${legendHtml}<div class="seg2">${metricTabsHtml}</div></div></div>
-        <div class="evo">
-          <div class="ylab"><span>${mFmt(maxV)}</span><span>${mFmt(maxV / 2)}</span><span>0</span></div>
-          <div class="plot">${evoSvg}${evoLbls}<div class="cols">${evoCols}</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+          <div class="st">${isCompare?'Evolução por dia do mês':(daily.length===1?'Evolução por horário':'Evolução diária')}</div>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">${legendHtml}<div class="seg2">${metricTabsHtml}</div></div>
         </div>
-        <div class="xlabs">${xlabs}</div>
+        <div style="display:flex;gap:10px;">
+          <div style="display:flex;flex-direction:column;justify-content:space-between;height:210px;font-size:10.5px;color:#8a93a8;text-align:right;min-width:60px;"><span>${mFmt(maxV)}</span><span>${mFmt(maxV/2)}</span><span>0</span></div>
+          <div style="flex:1;position:relative;height:210px;border-bottom:1px solid #262c3a;">${evoSvg}${evoLbls}<div style="position:absolute;inset:0;display:flex;">${evoCols}</div></div>
+        </div>
+        <div style="display:flex;margin-left:70px;margin-top:6px;">${xlabs}</div>
       </div>
-      <div class="grid-3">
-        <div class="card"><div class="sect-title" style="margin-bottom:16px">Pedidos por horário</div><div class="hbars">${hourlyHtml}</div></div>
-        <div class="card"><div class="sect-head" style="margin-bottom:16px"><div class="sect-title">Dia da semana</div><div class="meta">faturamento médio</div></div><div class="wbars">${weekdayHtml}</div></div>
-        <div class="card"><div class="sect-title" style="margin-bottom:12px">Canal de venda</div><div class="rows">${typeHtml}</div></div>
-      </div>
-      <div class="grid-2">
-        <div class="card"><div class="sect-title" style="margin-bottom:12px">Formas de pagamento</div><div class="rows">${payHtml}</div></div>
+
+      ${compareHtml}
+
+      <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:14px;align-items:start;">
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="padding:18px 20px 14px;"><div class="st">DRE gerencial — regime caixa</div><div class="sub" style="margin-top:3px;">Receita de vendas (Saipos) − lançamentos financeiros pagos no período · ${esc(periodNote)}</div></div>
+          ${dreHtml}
+        </div>
         <div class="card">
-          <div class="sect-head">
-            <div class="sect-title">Produtos mais vendidos</div>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input type="text" placeholder="buscar produto…" style="width:150px" value="${esc(F.prodSearch)}" oninput="setF('prodSearch',this.value);this.focus()">
-              <div class="seg2">${prodTabsHtml}</div>
-            </div>
-          </div>
-          <div class="rows" style="gap:10px">${prodHtml}</div>
+          <div class="st">Despesas por categoria</div><div class="sub" style="margin-bottom:14px;">Lançamentos pagos · % sobre o total de despesas</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">${costHtml}</div>
         </div>
       </div>
-      <div class="footnote">Vendas canceladas e itens excluídos não entram nos totais. Em horários de pico a Saipos pode atualizar os dados com atraso de até 1 dia.</div>
+
+      <div class="grid-auto">
+        <div class="card"><div class="st" style="font-size:14px;margin-bottom:16px;">Pedidos por horário</div><div style="display:flex;align-items:flex-end;gap:4px;height:120px;">${hourlyHtml}</div></div>
+        <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="st" style="font-size:14px;">Dia da semana</div><div class="sub">faturamento médio</div></div><div style="display:flex;align-items:flex-end;gap:6px;height:120px;">${weekdayHtml}</div></div>
+        <div class="card"><div class="st" style="font-size:14px;margin-bottom:14px;">Canal de venda</div><div style="display:flex;flex-direction:column;gap:12px;">${chanHtml}</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:14px;align-items:start;">
+        <div class="card"><div class="st" style="font-size:14px;margin-bottom:14px;">Formas de pagamento</div><div style="display:flex;flex-direction:column;gap:12px;">${payHtml}</div></div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+            <div class="st" style="font-size:14px;">Produtos mais vendidos</div>
+            <div style="display:flex;gap:8px;align-items:center;"><input type="text" placeholder="buscar produto…" value="${esc(F.prodSearch)}" oninput="setF('prodSearch',this.value)" style="width:140px;"><div class="seg2">${prodTabsHtml}</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">${prodHtml}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;"><div class="st">Posição de estoque</div><div class="sub">${stockList.length?stockRaw.length+' ingredientes':'indisponível no momento'}</div></div>
+        ${stockInner}
+      </div>
+
+      <div class="footnote">Vendas canceladas e itens excluídos não entram nos totais. DRE em regime caixa (lançamentos pagos por data de pagamento). Categorias de recebimento (frente de caixa, vendas) são tratadas como entrada e não entram nas despesas.</div>
     </div>`;
 
-  const inp = document.querySelector('.sect-head input[type=text]');
-  if (inp && F.prodSearch) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+  const inp=document.querySelector('#content input[type=text]');
+  if (inp && F.prodSearch){ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); }
 }
 
 dateSel = fmtDate(new Date());
-monthSel = dateSel.slice(0, 7);
-monthsSel = [monthSel];
-const _wk = new Date(); _wk.setDate(_wk.getDate() - 6);
-rangeStart = fmtDate(_wk); rangeEnd = dateSel;
+monthsSel = [dateSel.slice(0,7)];
 renderControls();
 load();
-setInterval(load, REFRESH_MINUTES * 60 * 1000);
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && lastUpdate && Date.now() - lastUpdate > REFRESH_MINUTES * 60 * 1000) load();
-});
+setInterval(load, REFRESH_MINUTES*60*1000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && lastUpdate && Date.now()-lastUpdate > REFRESH_MINUTES*60*1000) load(); });
 </script>
 </body>
 </html>

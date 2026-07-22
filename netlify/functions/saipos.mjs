@@ -1,6 +1,6 @@
 // Proxy server-side para a API de Dados da Saipos.
 // O token fica na variável de ambiente SAIPOS_TOKEN (Site settings → Environment variables no Netlify).
-const ALLOWED = ['search_sales', 'sales_items', 'sales_status_history', 'financial_transactions'];
+const ALLOWED = ['search_sales', 'sales_items', 'sales_status_history', 'search_financial_transactions', 'search_ingredient_movement'];
 const PARAMS = ['p_date_column_filter', 'p_filter_date_start', 'p_filter_date_end', 'p_limit', 'p_offset'];
 
 export default async (req) => {
