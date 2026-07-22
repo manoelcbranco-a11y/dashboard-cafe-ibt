@@ -90,26 +90,27 @@ const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLo
 const shiftHour = s => { const h=parseInt((s.created_at||'').slice(11,13),10); if(isNaN(h))return null; return (s.created_at||'').slice(0,10)>(s.shift_date||'')?h+24:h; };
 
 const apiCache = {};
-async function apiPage(endpoint, dateCol, startStr, endStr, offset) {
+async function apiPage(endpoint, dateCol, startStr, endStr, offset, opts = {}) {
   const qs = new URLSearchParams({ endpoint, p_date_column_filter:dateCol, p_filter_date_start:startStr+'T00:00:00', p_filter_date_end:endStr+'T23:59:59', p_limit:1000, p_offset:offset });
+  const attempts = opts.attempts || 4;
   let lastMsg = '';
-  for (let attempt=0; attempt<6; attempt++) {
-    if (attempt) await new Promise(r=>setTimeout(r, Math.min(8000,800*Math.pow(2,attempt-1))));
+  for (let attempt=0; attempt<attempts; attempt++) {
+    if (attempt) await new Promise(r=>setTimeout(r, Math.min(3000,700*attempt)));
     let r;
     try { r = await fetch(`${FN}?${qs}`); } catch(e) { lastMsg='Falha de rede'; continue; }
     if (r.ok) return r.json();
     lastMsg = 'HTTP '+r.status;
     if (r.status<500 && r.status!==429) { try{ lastMsg+=' — '+((await r.json()).message||''); }catch(e){} throw new Error(lastMsg); }
   }
-  throw new Error(lastMsg+' (API da Saipos instável — 6 tentativas)');
+  throw new Error(lastMsg+' (API da Saipos instável)');
 }
-async function fetchAll(endpoint, dateCol, startStr, endStr) {
+async function fetchAll(endpoint, dateCol, startStr, endStr, opts = {}) {
   const key = endpoint+'|'+startStr+'|'+endStr;
   const hit = apiCache[key];
   if (hit && (endStr < fmtDate(new Date()) || Date.now()-hit.t < 4*60*1000)) return hit.rows;
   const rows = [];
   for (let offset=0,i=0; i<12; i++,offset+=1000) {
-    const page = await apiPage(endpoint, dateCol, startStr, endStr, offset);
+    const page = await apiPage(endpoint, dateCol, startStr, endStr, offset, opts);
     rows.push(...page);
     if (!page || page.length<1000) break;
   }
@@ -159,16 +160,20 @@ async function load(){
         s=new Date(ce); s.setDate(s.getDate()+1);
       }
     }
-    const stockTask = fetchAll('search_ingredient_movement','date_movement', fmtDate(new Date(Date.now()-7*864e5)), fmtDate(new Date())).catch(()=>[]);
-    const results = await Promise.all(tasks.map(t=>t[1]));
-    const stk = await stockTask;
+    const stockTask = fetchAll('search_ingredient_movement','date_movement', fmtDate(new Date(Date.now()-7*864e5)), fmtDate(new Date()), {attempts:1}).catch(()=>[]);
+    const results = await Promise.allSettled(tasks.map(t=>t[1]));
     if (seq!==loadSeq) return;
-    const S=[], I=[], Fn=[];
-    results.forEach((rows,i)=>{ const k=tasks[i][0]; if(k==='sales')S.push(...rows); else if(k==='items')I.push(...rows); else Fn.push(...rows); });
-    rawSales=S; rawItems=I; fin=Fn; stockRaw=stk||[];
+    const S=[], I=[], Fn=[]; let salesOk=false, salesFail=false;
+    results.forEach((res,i)=>{ const k=tasks[i][0];
+      if (res.status==='fulfilled'){ if(k==='sales'){S.push(...res.value);salesOk=true;} else if(k==='items')I.push(...res.value); else Fn.push(...res.value); }
+      else if (k==='sales') salesFail=true;
+    });
+    if (!salesOk && salesFail) throw new Error((results.find(r=>r.status==='rejected')||{}).reason?.message || 'Falha ao buscar vendas');
+    rawSales=S; rawItems=I; fin=Fn;
     lastUpdate=new Date();
     document.getElementById('meta').textContent = 'Dados Saipos · atualizado '+lastUpdate.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · auto a cada '+REFRESH_MINUTES+' min';
     render();
+    stockTask.then(rows=>{ if(seq===loadSeq && rows && rows.length){ stockRaw=rows; render(); } });
   } catch(e){
     if (seq!==loadSeq) return;
     document.getElementById('content').innerHTML = `<div class="card errbox">
